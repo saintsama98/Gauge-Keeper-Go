@@ -1,0 +1,14 @@
+# Binaries
+/bin/
+keeper
+*.exe
+
+# Env / secrets — NEVER commit the curator key
+.env
+*.pem
+*.key
+
+# Go
+*.test
+*.out
+vendor/
