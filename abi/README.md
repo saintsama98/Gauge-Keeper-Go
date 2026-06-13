@@ -14,6 +14,8 @@ interfaces that repo compiles against.
 | `pendle-pt.abi.json` | `internal/bindings/pendlept` | `IPPrincipalToken` (PT: `expiry`, `isExpired`) |
 | `aave-pool.abi.json` | `internal/bindings/aavepool` | `IAavePool` (supply/withdraw only — see note) |
 | `aave-data.abi.json` | `internal/bindings/aavedata` | Aave V3 `IPoolDataProvider` (curated subset — see note) |
+| `morpho-blue.abi.json` | `internal/bindings/morphoblue` | Morpho Blue `IMorpho` (curated subset — see note) |
+| `metamorpho.abi.json` | `internal/bindings/metamorpho` | `IMetaMorpho` (curated subset — see note) |
 
 > **Note (Aave):** the diamond's `IAavePool` (`aave-pool.abi.json`) is
 > intentionally minimal (supply/withdraw); it carries **no** reserve/utilization
@@ -45,6 +47,19 @@ interfaces that repo compiles against.
 > `rebalance`, `harvestAll`, `fulfillWithdraw`, `guardCheckpoint`. Regenerate the
 > ABI from the diamond `out/` with the `sel`/`jq` extraction recorded in the
 > keeper commit; add a fragment here only when the keeper needs to call it.
+
+> **Note (Morpho):** unlike Aave/Pendle these are **external mainnet protocol**
+> ABIs (not from the diamond), curated to only the getters the `risk/morpho`
+> `MorphoBlueReader` calls — public-mapping getters whose struct returns flatten
+> into named tuples, taken from `morpho-org/morpho-blue` `IMorpho.sol`
+> (`market`, `position`) and `morpho-org/metamorpho` `IMetaMorpho.sol`
+> (`withdrawQueueLength`, `withdrawQueue`, `config`). The Morpho Blue singleton
+> address (Ethereum mainnet `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb`, the same
+> CREATE2 address on every Morpho chain) is supplied via `KEEPER_MORPHO_BLUE` and
+> each MetaMorpho vault via `KEEPER_MORPHO_VAULTS`; when unset the reader returns
+> `ok=false` (closed-form floor). This reader is the **keyless, free** alternative
+> to the auth-gated Credora rating feed — the public Blue GraphQL API carries net
+> APY but no risk rating.
 
 Keep both the ABIs here and the generated code in version control so the project
 builds reproducibly without network access. ABIs are read-only inputs — never

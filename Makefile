@@ -39,3 +39,5 @@ bindings:
 	abigen --abi abi/pendle-pt.abi.json     --pkg pendlept     --type PendlePT     --out internal/bindings/pendlept/pendlept.gen.go
 	abigen --abi abi/aave-pool.abi.json     --pkg aavepool     --type AavePool     --out internal/bindings/aavepool/aavepool.gen.go
 	abigen --abi abi/aave-data.abi.json     --pkg aavedata     --type AaveData     --out internal/bindings/aavedata/aavedata.gen.go
+	abigen --abi abi/morpho-blue.abi.json   --pkg morphoblue   --type MorphoBlue   --out internal/bindings/morphoblue/morphoblue.gen.go
+	abigen --abi abi/metamorpho.abi.json    --pkg metamorpho   --type MetaMorpho   --out internal/bindings/metamorpho/metamorpho.gen.go

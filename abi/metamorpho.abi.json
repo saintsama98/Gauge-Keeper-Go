@@ -1,0 +1,27 @@
+[
+  {
+    "type": "function",
+    "name": "withdrawQueueLength",
+    "stateMutability": "view",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "withdrawQueue",
+    "stateMutability": "view",
+    "inputs": [{ "name": "", "type": "uint256" }],
+    "outputs": [{ "name": "", "type": "bytes32" }]
+  },
+  {
+    "type": "function",
+    "name": "config",
+    "stateMutability": "view",
+    "inputs": [{ "name": "", "type": "bytes32" }],
+    "outputs": [
+      { "name": "cap", "type": "uint184" },
+      { "name": "enabled", "type": "bool" },
+      { "name": "removableAt", "type": "uint64" }
+    ]
+  }
+]
