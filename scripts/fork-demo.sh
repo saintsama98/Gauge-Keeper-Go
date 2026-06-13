@@ -55,7 +55,7 @@ trap cleanup EXIT
 
 # --- 1. fork anvil -----------------------------------------------------------
 log "starting anvil fork of Ethereum mainnet on :$PORT"
-"$FOUNDRY/anvil" --fork-url "$FORK_URL" --port "$PORT" --chain-id 1 --silent &
+"$FOUNDRY/anvil" --fork-url "$FORK_URL" --port "$PORT" --chain-id 31337 --silent &
 PIDS+=($!)
 for _ in $(seq 1 30); do cast chain-id --rpc-url "$RPC" >/dev/null 2>&1 && break; sleep 1; done
 cast chain-id --rpc-url "$RPC" >/dev/null || { echo "anvil not ready"; exit 1; }
@@ -66,7 +66,7 @@ log "deploying diamond via DeployFork.s.sol (Aave + Steakhouse Morpho + Pendle U
 (cd "$DIAMOND_REPO" && "$FOUNDRY/forge" script script/DeployFork.s.sol:DeployFork \
   --rpc-url "$RPC" --broadcast --private-key "$DEPLOYER_KEY" -vv)
 
-VAULT=$(python3 - "$DIAMOND_REPO/broadcast/DeployFork.s.sol/1/run-latest.json" <<'EOF'
+VAULT=$(python3 - "$DIAMOND_REPO/broadcast/DeployFork.s.sol/31337/run-latest.json" <<'EOF'
 import json, sys
 txs = json.load(open(sys.argv[1]))["transactions"]
 print(next(t["contractAddress"] for t in txs

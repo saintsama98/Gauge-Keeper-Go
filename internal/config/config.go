@@ -65,6 +65,14 @@ type Config struct {
 	MorphoAPIEndpoint string
 	// MorphoVaults maps a StrategyID to its MetaMorpho ERC-4626 vault address.
 	MorphoVaults map[types.StrategyID]string
+
+	// MorphoBlue is the Morpho Blue singleton address the KEYLESS on-chain risk
+	// reader (internal/risk/morpho.MorphoBlueReader) queries for per-market
+	// supply/borrow/utilization. Defaults to the Ethereum-mainnet singleton.
+	// This is the free, no-key alternative to the auth-gated Credora rating feed:
+	// with MorphoVaults set and a live client, the brain gets a real Morpho EL
+	// signal without any vendor subscription. Empty/zero => reader dormant.
+	MorphoBlue string
 }
 
 // PendleMarket is the per-strategy Pendle handle parsed from KEEPER_PENDLE_MARKETS.
@@ -103,6 +111,7 @@ func Load() *Config {
 
 		MorphoAPIEndpoint: env("KEEPER_MORPHO_API", ""),
 		MorphoVaults:      parseStringMap(env("KEEPER_MORPHO_VAULTS", "")),
+		MorphoBlue:        env("KEEPER_MORPHO_BLUE", "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb"),
 	}
 }
 

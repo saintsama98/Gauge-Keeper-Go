@@ -150,14 +150,33 @@ func buildRiskProvider(cfg *config.Config, client *ethclient.Client, log *slog.L
 		log.Info("risk: aave reader wired", "strategies", len(cfg.AaveStrategyIDs), "live", live)
 	}
 
-	// Credora (Morpho facet): live GraphQL rating feed. Degrades to ok=false when
-	// the endpoint is empty (the public Morpho API has NO rating field).
-	if len(cfg.CredoraMarkets) > 0 {
+	// Morpho (MetaMorpho facet): KEYLESS on-chain risk reader over Morpho Blue —
+	// the free, no-subscription alternative to the auth-gated Credora feed. It
+	// derives EL from each vault's live per-market utilization and withdrawal
+	// liquidity. Degrades to ok=false when client/blue absent (closed-form floor).
+	if len(cfg.MorphoVaults) > 0 {
+		vaults := make(map[types.StrategyID]common.Address, len(cfg.MorphoVaults))
+		for id, addr := range cfg.MorphoVaults {
+			vaults[id] = common.HexToAddress(addr)
+		}
+		mr := morpho.NewMorphoBlueReader(callerOrNil(client), common.HexToAddress(cfg.MorphoBlue), vaults)
+		for id := range cfg.MorphoVaults {
+			routes[id] = mr
+		}
+		live := client != nil && cfg.MorphoBlue != ""
+		log.Info("risk: morpho on-chain reader wired", "strategies", len(cfg.MorphoVaults), "blue", cfg.MorphoBlue, "live", live)
+	}
+
+	// Credora (Morpho facet): the auth-gated GraphQL rating vendor. Only wired
+	// when an endpoint is supplied — a dormant Credora must NOT shadow the keyless
+	// on-chain reader above. When live it OVERRIDES the on-chain reader for its
+	// ids (the operator opted into the paid vendor rating).
+	if len(cfg.CredoraMarkets) > 0 && cfg.CredoraEndpoint != "" {
 		cr := credora.NewReader(cfg.CredoraEndpoint, cfg.CredoraAPIKey, http.DefaultClient, cfg.CredoraMarkets)
 		for id := range cfg.CredoraMarkets {
 			routes[id] = cr
 		}
-		log.Info("risk: credora reader wired", "strategies", len(cfg.CredoraMarkets), "live", cfg.CredoraEndpoint != "")
+		log.Info("risk: credora reader wired (overrides on-chain morpho for these ids)", "strategies", len(cfg.CredoraMarkets))
 	}
 
 	if len(routes) == 0 {
