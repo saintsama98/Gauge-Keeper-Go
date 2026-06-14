@@ -23,6 +23,7 @@ import (
 	"github.com/vault-router-keeper/internal/perceive"
 	"github.com/vault-router-keeper/internal/risk"
 	"github.com/vault-router-keeper/internal/risk/aave"
+	"github.com/vault-router-keeper/internal/risk/compound"
 	"github.com/vault-router-keeper/internal/risk/credora"
 	"github.com/vault-router-keeper/internal/risk/morpho"
 	"github.com/vault-router-keeper/internal/risk/pendle"
@@ -150,6 +151,21 @@ func buildRiskProvider(cfg *config.Config, client *ethclient.Client, log *slog.L
 		log.Info("risk: aave reader wired", "strategies", len(cfg.AaveStrategyIDs), "live", live)
 	}
 
+	// Compound V3 (Comet): live utilization-risk reader over the Comet market.
+	// Degrades to ok=false when client/market absent (closed-form floor).
+	if len(cfg.CompoundStrategyIDs) > 0 {
+		isCompound := make(map[types.StrategyID]bool, len(cfg.CompoundStrategyIDs))
+		for _, id := range cfg.CompoundStrategyIDs {
+			isCompound[id] = true
+		}
+		cr := compound.NewRiskReader(callerOrNil(client), common.HexToAddress(cfg.CompoundComet), isCompound)
+		for _, id := range cfg.CompoundStrategyIDs {
+			routes[id] = cr
+		}
+		live := client != nil && cfg.CompoundComet != ""
+		log.Info("risk: compound reader wired", "strategies", len(cfg.CompoundStrategyIDs), "live", live)
+	}
+
 	// Morpho (MetaMorpho facet): KEYLESS on-chain risk reader over Morpho Blue —
 	// the free, no-subscription alternative to the auth-gated Credora feed. It
 	// derives EL from each vault's live per-market utilization and withdrawal
@@ -227,6 +243,21 @@ func buildYieldProvider(cfg *config.Config, client *ethclient.Client, log *slog.
 		}
 		live := cfg.AaveDataProvider != "" && cfg.AaveAsset != ""
 		log.Info("perceive: aave supply-APR overlay wired", "strategies", len(cfg.AaveStrategyIDs), "live", live)
+	}
+
+	// Compound V3: live supply APR = getSupplyRate(getUtilization()) annualized,
+	// read from the Comet market. Empty config => no route (brain sees APY 0).
+	if len(cfg.CompoundStrategyIDs) > 0 {
+		isCompound := make(map[types.StrategyID]bool, len(cfg.CompoundStrategyIDs))
+		for _, id := range cfg.CompoundStrategyIDs {
+			isCompound[id] = true
+		}
+		yr := compound.NewYieldReader(callerOrNil(client), common.HexToAddress(cfg.CompoundComet), isCompound)
+		for _, id := range cfg.CompoundStrategyIDs {
+			routes[id] = yr
+		}
+		live := cfg.CompoundComet != ""
+		log.Info("perceive: compound supply-APR overlay wired", "strategies", len(cfg.CompoundStrategyIDs), "live", live)
 	}
 
 	// Morpho: MetaMorpho net APY over the public Blue GraphQL API (no auth).
