@@ -6,6 +6,7 @@ package keeper
 import (
 	"context"
 	"log/slog"
+	"math/big"
 	"time"
 
 	"github.com/vault-router-keeper/internal/brain"
@@ -114,13 +115,26 @@ func (k *Keeper) plan(state *types.VaultState, alloc *types.Allocation, now time
 		return actions
 	}
 
-	// Reallocation: only if the brain's targets differ from on-chain, throttled.
-	if k.sched.Due(taskRebalance, now) && allocationDiffers(state, alloc) {
-		actions = append(actions,
-			types.Action{Kind: types.ActionSetAllocation, Allocation: alloc},
-			types.Action{Kind: types.ActionRebalance},
-		)
-		k.sched.Mark(taskRebalance, now)
+	// Reallocation, throttled. Two independent triggers:
+	//   (1) the brain's targets differ from on-chain — push the new targets and
+	//       rebalance to them (SetAllocation + Rebalance).
+	//   (2) targets are unchanged but deployed assets have drifted from those
+	//       targets — just Rebalance to the existing targets.
+	// Without (2) the keeper would never deploy funds that arrive after the
+	// initial allocation: a deposit changes balances (and the gap to target)
+	// without changing the target bps, so allocationDiffers alone misses it.
+	if k.sched.Due(taskRebalance, now) {
+		switch {
+		case allocationDiffers(state, alloc):
+			actions = append(actions,
+				types.Action{Kind: types.ActionSetAllocation, Allocation: alloc},
+				types.Action{Kind: types.ActionRebalance},
+			)
+			k.sched.Mark(taskRebalance, now)
+		case deploymentDrifts(state):
+			actions = append(actions, types.Action{Kind: types.ActionRebalance})
+			k.sched.Mark(taskRebalance, now)
+		}
 	}
 
 	// Harvest on cadence.
@@ -152,6 +166,37 @@ func currentTargets(state *types.VaultState) *types.Allocation {
 func allocationDiffers(state *types.VaultState, alloc *types.Allocation) bool {
 	for _, s := range state.Strategies {
 		if alloc.Targets[s.ID] != s.TargetBps {
+			return true
+		}
+	}
+	return false
+}
+
+// driftToleranceBps is the per-strategy deviation (as a fraction of total
+// assets) below which deployed-vs-target drift is treated as dust not worth a
+// rebalance. Keeps the keeper from churning on rounding residue.
+const driftToleranceBps types.Bps = 25
+
+// deploymentDrifts reports whether any strategy's actual on-chain holdings have
+// moved away from its target allocation by more than driftToleranceBps of total
+// assets. This catches drift that allocationDiffers misses: deposits and
+// withdrawals change balances (and thus the gap to target) without changing the
+// target bps themselves.
+func deploymentDrifts(state *types.VaultState) bool {
+	total := state.TotalAssets
+	if total == nil || total.Sign() == 0 {
+		return false
+	}
+	denom := big.NewInt(int64(types.BpsDenominator))
+	tol := new(big.Int).Div(new(big.Int).Mul(total, big.NewInt(int64(driftToleranceBps))), denom)
+	for _, s := range state.Strategies {
+		desired := new(big.Int).Div(new(big.Int).Mul(total, big.NewInt(int64(s.TargetBps))), denom)
+		cur := s.CurrentAssets
+		if cur == nil {
+			cur = new(big.Int)
+		}
+		drift := new(big.Int).Abs(new(big.Int).Sub(cur, desired))
+		if drift.Cmp(tol) > 0 {
 			return true
 		}
 	}

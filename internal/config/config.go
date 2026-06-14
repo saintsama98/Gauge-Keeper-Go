@@ -42,6 +42,17 @@ type Config struct {
 	// AaveStrategyIDs are the bytes32 StrategyIDs (hex) the Aave adapter owns.
 	AaveStrategyIDs []types.StrategyID
 
+	// --- Compound V3 (Comet) live supply-rate + utilization reader -------------
+	// CompoundComet is the Comet base-market address (cUSDCv3). Empty => the
+	// Compound yield + risk adapters are ok=false (the no-data path).
+	CompoundComet string
+	// CompoundAsset is the market base token == Vault.asset() (USDC). Documented
+	// for parity/validation; the Comet rate/utilization reads are market-global
+	// (no asset arg), so the adapters don't require it.
+	CompoundAsset string
+	// CompoundStrategyIDs are the bytes32 StrategyIDs (hex) the Compound adapter owns.
+	CompoundStrategyIDs []types.StrategyID
+
 	// --- Pendle PT live oracle/risk reader -------------------------------------
 	// PendleOracle is the shared PendlePYLpOracle address. Empty => Pendle ok=false.
 	PendleOracle string
@@ -101,6 +112,10 @@ func Load() *Config {
 		AaveDataProvider: env("KEEPER_AAVE_DATA_PROVIDER", ""),
 		AaveAsset:        env("KEEPER_AAVE_ASSET", ""),
 		AaveStrategyIDs:  parseStrategyIDs(env("KEEPER_AAVE_STRATEGY_IDS", "")),
+
+		CompoundComet:       env("KEEPER_COMPOUND_COMET", ""),
+		CompoundAsset:       env("KEEPER_COMPOUND_ASSET", ""),
+		CompoundStrategyIDs: parseStrategyIDs(env("KEEPER_COMPOUND_STRATEGY_IDS", "")),
 
 		PendleOracle:  env("KEEPER_PENDLE_ORACLE", ""),
 		PendleMarkets: parsePendleMarkets(env("KEEPER_PENDLE_MARKETS", "")),
