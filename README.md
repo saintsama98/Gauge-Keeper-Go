@@ -1,4 +1,4 @@
-# Banana Markets Keeper 
+# Risk Allocator-Keeper for ERC2535 Diamond based ERC4626 based Yeild Router    
 
 Off-chain agent for the Vault Router (https://github.com/jayeshy14/Vault-Router.git) ERC-4626 diamond. It reads
 live market state, decides a risk-gated target allocation, and submits
