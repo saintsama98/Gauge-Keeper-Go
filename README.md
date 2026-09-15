@@ -1,6 +1,6 @@
 # Banana Markets Keeper 
 
-Off-chain agent for the Vault Router (Banana Markets) ERC-4626 diamond. It reads
+Off-chain agent for the Vault Router (https://github.com/jayeshy14/Vault-Router.git) ERC-4626 diamond. It reads
 live market state, decides a risk-gated target allocation, and submits
 curator-permissioned transactions on a schedule. It deploys **no oracle and no
 contracts** — it reads the strategies' existing on-chain views (and one public
