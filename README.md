@@ -160,3 +160,7 @@ The demo scripts and the integration test read these environment variables:
 ## Status
 
 Research build. Exercised end to end on an Ethereum mainnet fork through `scripts/fork-demo.sh`, and in dry run mode. Not audited. Review the signing path and every configured risk source before pointing it at a vault that holds real funds.
+
+## License
+
+MIT. See [`LICENSE`](LICENSE).
