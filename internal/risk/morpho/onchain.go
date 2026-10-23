@@ -48,7 +48,7 @@ type vaultCaller interface {
 	}, error)
 }
 
-// Documented-default curve coefficients (CALIBRATION TODO).
+// Default curve coefficients, not calibrated against loss data.
 //
 // Every INPUT these are applied to is a LIVE on-chain read: per-market
 // utilization (Blue.market totalBorrowAssets/totalSupplyAssets), the vault's
@@ -228,7 +228,7 @@ func (r *MorphoBlueReader) Risk(id types.StrategyID) (brain.RiskInputs, bool) {
 }
 
 // morphoVendorEL is the documented-default modeled expected-loss curve
-// (CALIBRATION TODO): clamp(base + utilK*max(0,util-u0) + illiqK*illiquid, 0, cap).
+// (default coefficients, not calibrated against loss data): clamp(base + utilK*max(0,util-u0) + illiqK*illiquid, 0, cap).
 // It raises modeled EL as the vault's markets approach full utilization and as a
 // larger share of the vault's assets becomes non-withdrawable.
 func morphoVendorEL(util, illiquidFrac float64) float64 {

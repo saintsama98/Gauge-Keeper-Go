@@ -22,8 +22,8 @@ func id(b byte) types.StrategyID {
 }
 
 // flattenAllocation must be deterministic: the same target map always yields the
-// same id order (sorted) and matching bps — identical calldata every call
-// independent of Go's random map iteration order.
+// same id order (sorted) and matching bps, so the calldata is identical on every
+// call, independent of Go's random map iteration order.
 func TestFlattenAllocationDeterministic(t *testing.T) {
 	alloc := &types.Allocation{Targets: map[types.StrategyID]types.Bps{
 		id(0x03): 1000,

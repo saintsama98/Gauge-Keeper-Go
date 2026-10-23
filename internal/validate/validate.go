@@ -6,12 +6,12 @@
 // reverted (gas-burning, alerting) transaction into a skipped one.
 //
 // On failure the caller skips the reallocation and falls back to the last-good /
-// idle targets; a passing Result means every structural invariant
-// holds: caps, idle floor, churn bound, quarantine, completeness.
+// idle targets; a passing Result means every structural invariant holds:
+// caps, idle floor, churn bound, quarantine, completeness.
 //
-// Optional eth_call/Tenderly simulation and expiry/min-delay gating
-// are deferred: they require the live ChainReader/backend, which is not wired
-// while the keeper runs against StubReader. They plug in here once that lands.
+// Optional eth_call/Tenderly simulation and expiry/min-delay gating are not
+// implemented: they require the live ChainReader/backend, which is not wired
+// while the keeper runs against StubReader.
 package validate
 
 import (

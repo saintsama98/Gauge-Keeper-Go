@@ -17,8 +17,8 @@ type Chain interface {
 	Expiry(id types.StrategyID) (*big.Int, error)        // PT maturity, unix seconds
 }
 
-// Policy is the structural liquidity-cap calibration for PT venues (placeholder
-// values, not calibrated against real exit-liquidity data).
+// Policy is the structural liquidity-cap calibration for PT venues. The values
+// are placeholders, not calibrated against real exit-liquidity data.
 type Policy struct {
 	MaxHorizonSecs int64     // at/above this time-to-maturity the PT is treated as most illiquid
 	MaxPTBps       types.Bps // loosest cap (near maturity)
@@ -55,11 +55,10 @@ func (p Policy) liquidityCapBps(ttmSecs int64) types.Bps {
 // an un-ready or unreadable market degrades to "no data" (the closed-form floor),
 // never a cap raise.
 //
-// Scope note: the richer pending-withdraw-aware cap — sizing the
-// PT to what the async WithdrawQueue can cover before maturity — needs live queue
-// demand, which the fixed brain.RiskProvider signature Risk(id) does not carry.
-// Only the maturity-structural cap is implemented; live queue pressure is an
-// open interface question.
+// Scope note: a richer pending-withdraw-aware cap, sizing the PT to what the
+// async WithdrawQueue can cover before maturity, needs live queue demand, which
+// the fixed brain.RiskProvider signature Risk(id) does not carry. Only the
+// maturity-structural cap is implemented; live queue pressure is not wired in.
 type Reader struct {
 	chain  Chain
 	policy Policy

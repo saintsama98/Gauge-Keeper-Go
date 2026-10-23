@@ -15,7 +15,7 @@ import (
 // Documented-default curve coefficients, mirrored from internal/risk/aave/chaos.go
 // (a Comet base-supply position carries the same utilization/exit-liquidity risk
 // posture as an Aave supply position). The INPUT (utilization) is a live on-chain
-// read; only the input->risk curve shape is a default (CALIBRATION TODO).
+// read; only the input->risk curve shape is a default, not calibrated against loss data.
 const (
 	// utilization -> liquidity-haircut piecewise-linear breakpoints.
 	utilHaircutLow  = 0.90 // <= this: no liquidity haircut from utilization.

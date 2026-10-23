@@ -58,7 +58,7 @@ type reserveCaller interface {
 	GetPaused(opts *bind.CallOpts, asset common.Address) (bool, error)
 }
 
-// Documented-default curve coefficients (CALIBRATION TODO).
+// Default curve coefficients, not calibrated against loss data.
 //
 // Every INPUT these coefficients are applied to is a LIVE on-chain read
 // (utilization derived from getReserveData debt/aToken totals, isActive/isFrozen
@@ -217,7 +217,7 @@ func utilization(stableDebt, variableDebt, totalAToken *big.Int) float64 {
 }
 
 // utilHaircut is the documented-default piecewise-linear utilization->haircut
-// curve (CALIBRATION TODO): flat 0 up to utilHaircutLow, a linear ramp to
+// curve (default coefficients, not calibrated against loss data): flat 0 up to utilHaircutLow, a linear ramp to
 // haircutUtilMid across (utilHaircutLow, utilHaircutHigh], then haircutUtilTop
 // above utilHaircutHigh.
 func utilHaircut(util float64) float64 {
@@ -267,7 +267,7 @@ func supplyHeadroomBps(supplyCap, decimals, totalAToken *big.Int) types.Bps {
 	return types.Bps(bps.Int64())
 }
 
-// vendorEL is the documented-default smooth util->EL curve (CALIBRATION TODO):
+// vendorEL is the default smooth util->EL curve (not calibrated against loss data):
 // clamp(base + k*max(0, util-u0), 0, cap). It raises modeled expected loss as the
 // reserve approaches illiquidity, starting from the Aave baseline contract risk.
 func vendorEL(util float64) float64 {

@@ -60,7 +60,8 @@ type RiskModel struct {
 	MinScore                                         float64
 }
 
-// DefaultRiskModel returns the default risk coefficients.
+// DefaultRiskModel returns the default risk coefficients. They are not
+// calibrated against loss data.
 func DefaultRiskModel() RiskModel {
 	return RiskModel{
 		BroadShockVolatile: 0.40,

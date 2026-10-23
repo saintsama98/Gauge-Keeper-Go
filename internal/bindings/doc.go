@@ -4,8 +4,8 @@
 //
 //	bindings/vault     — Vault Router diamond views (Allocator/Guard/WithdrawQueue, ERC-4626)
 //	bindings/aavepool  — Aave V3 UiPoolDataProvider
-//	bindings/chaosrisk — Chaos Labs RiskOracle getter
-//	bindings/redstone  — RedStone push price adapter (AggregatorV3)
+//	bindings/chaosrisk — Chaos Labs RiskOracle getter (not generated)
+//	bindings/redstone  — RedStone push price adapter, AggregatorV3 (not generated)
 //
 // Isolating generated code here keeps the domain (pkg/types) and the ports
 // (internal/brain, perceive, trigger, execute) free of chain-specific types —

@@ -18,7 +18,7 @@ func weiRateToFloat(rate *big.Int) float64 {
 }
 
 // secondsPerYear is the compounding base for the fixed-to-maturity implied APY
-// (CALIBRATION TODO: 365d vs 365.25d / act-360 is a modeling choice). The INPUTS
+// (365d vs 365.25d / act-360 is a modeling choice). The INPUTS
 // — PT→asset rate and PT expiry — are 100% live on-chain reads; only this
 // constant and the annualization formula are documented defaults, not data.
 const secondsPerYear = 365 * 24 * 60 * 60

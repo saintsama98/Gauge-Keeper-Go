@@ -12,11 +12,10 @@ import (
 // this stack reads its position via aToken.balanceOf only — IAavePool exposes
 // just supply/withdraw, and there is NO UiPoolDataProvider / reserve-data getter
 // in the diamond or its dependencies. A live utilization/paused/cap feed
-// therefore needs an externally-sourced Aave V3 data-provider ABI (an open
-// item). Until that lands, this adapter serves a conservative, operator-set
-// RiskInputs per strategy. The brain composes it via max() with its closed-form
-// EL, so a configured profile can only ever tighten an allocation, never loosen
-// it (invariant 1).
+// therefore needs an externally-sourced Aave V3 data-provider ABI. Without one,
+// this adapter serves a conservative, operator-set RiskInputs per strategy.
+// The brain composes it via max() with its closed-form EL, so a configured
+// profile can only ever tighten an allocation, never loosen it.
 type ConfiguredReader struct {
 	profiles map[types.StrategyID]brain.RiskInputs
 }
