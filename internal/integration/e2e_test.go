@@ -38,13 +38,16 @@ import (
 	"github.com/vault-router-keeper/pkg/types"
 )
 
-const (
-	// foundryBin is where anvil/forge/cast live in this environment.
-	foundryBin = "~/.foundry/bin"
+var (
+	// foundryBin is the directory holding anvil/forge/cast: FOUNDRY_BIN if set,
+	// otherwise the directory of forge on PATH.
+	foundryBin = os.Getenv("FOUNDRY_BIN")
 	// diamondRepo is the Solidity repo whose script/Deploy.s.sol assembles the
-	// diamond against the repo's own mocks.
-	diamondRepo = "../vault-router-diamond"
+	// diamond against the repo's own mocks, read from DIAMOND_REPO.
+	diamondRepo = os.Getenv("DIAMOND_REPO")
+)
 
+const (
 	// anvilPort is a non-default port so the test never collides with a dev anvil
 	// on 8545.
 	anvilPort = "8547"
@@ -64,6 +67,14 @@ const (
 
 // TestE2EFreshAnvilRebalance is the full read->decide->validate->sign->send proof.
 func TestE2EFreshAnvilRebalance(t *testing.T) {
+	if diamondRepo == "" {
+		t.Skip("DIAMOND_REPO not set: point it at a vault-router-diamond checkout")
+	}
+	if foundryBin == "" {
+		if p, err := exec.LookPath("forge"); err == nil {
+			foundryBin = filepath.Dir(p)
+		}
+	}
 	anvil := filepath.Join(foundryBin, "anvil")
 	forge := filepath.Join(foundryBin, "forge")
 	cast := filepath.Join(foundryBin, "cast")
@@ -362,9 +373,9 @@ var _ = big.NewInt
 // Manual equivalent (handy for debugging a single stage):
 //
 //	# 1. fresh chain
-//	~/.foundry/bin/anvil --port 8547 --chain-id 31337
+//	anvil --port 8547 --chain-id 31337
 //	# 2. deploy
-//	cd ../vault-router-diamond
+//	cd "$DIAMOND_REPO"
 //	forge script script/Deploy.s.sol:Deploy --rpc-url http://localhost:8547 \
 //	  --broadcast --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 //	# 3. run keeper one tick (KEEPER_DRY_RUN=false, gauntlet-lite, static risk)
@@ -381,4 +392,4 @@ var _ = big.NewInt
 // live risk/APY overlays; the fresh-anvil variant above exercises the control loop
 // deterministically. Note: the mock-based Deploy.s.sol assembles its OWN asset and
 // strategy, so on a fork it still uses mocks — the fork only matters once the
-// strategy facets point at real protocol addresses (not done here).
+// strategy facets point at real protocol addresses, which this test does not do.

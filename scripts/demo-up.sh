@@ -19,10 +19,13 @@
 # =============================================================================
 set -euo pipefail
 
-FOUNDRY=~/.foundry/bin
-DIAMOND_REPO=../vault-router-diamond
+# FOUNDRY_BIN: directory holding anvil/forge/cast (default: where forge is on PATH)
+# DIAMOND_REPO: path to a vault-router-diamond checkout (required)
+# UI_REPO: path to a vault-router-ui checkout (required)
+FOUNDRY="${FOUNDRY_BIN:-$(dirname "$(command -v forge)")}"
+DIAMOND_REPO="${DIAMOND_REPO:?set DIAMOND_REPO to a vault-router-diamond checkout}"
 KEEPER_REPO="$(cd "$(dirname "$0")/.." && pwd)"
-UI_REPO=../vault-router-ui
+UI_REPO="${UI_REPO:?set UI_REPO to a vault-router-ui checkout}"
 
 FORK_URL="${1:-https://ethereum-rpc.publicnode.com}"
 PORT=8549

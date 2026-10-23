@@ -10,15 +10,17 @@
 #
 # Prereqs:
 #   - diamond repo has script/DeployFork.s.sol
-#   - .env.fork in this repo has FILL-FROM-REPORT fields populated with verified addresses
+#   - .env.fork in this repo has its FILL-FROM-DEPLOY fields populated
 #
 # Usage:   ./scripts/fork-demo.sh [fork-rpc-url]
 # Cleanup: the script kills anvil + keeper on exit (trap).
 # =============================================================================
 set -euo pipefail
 
-FOUNDRY=~/.foundry/bin
-DIAMOND_REPO=../vault-router-diamond
+# FOUNDRY_BIN: directory holding anvil/forge/cast (default: where forge is on PATH)
+# DIAMOND_REPO: path to a vault-router-diamond checkout (required)
+FOUNDRY="${FOUNDRY_BIN:-$(dirname "$(command -v forge)")}"
+DIAMOND_REPO="${DIAMOND_REPO:?set DIAMOND_REPO to a vault-router-diamond checkout}"
 KEEPER_REPO="$(cd "$(dirname "$0")/.." && pwd)"
 
 FORK_URL="${1:-https://ethereum-rpc.publicnode.com}"

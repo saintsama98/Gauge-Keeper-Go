@@ -143,3 +143,11 @@ export KEEPER_VAULT_ADDRESS=0x...    # the deployed diamond
 fork (anvil → real-facet diamond → keeper with the composite live risk layer →
 simulated deposits/withdrawals). `internal/bindings` is regenerated with
 `make bindings`.
+
+The demo scripts and the integration test read these environment variables:
+
+| Variable | Used by | Meaning |
+|---|---|---|
+| `DIAMOND_REPO` | both scripts, integration test | path to a vault-router-diamond checkout. The scripts exit and the test skips when it is unset |
+| `UI_REPO` | `scripts/demo-up.sh` | path to a vault-router-ui checkout |
+| `FOUNDRY_BIN` | both scripts, integration test | directory holding `anvil`, `forge` and `cast`. Defaults to the directory of `forge` on `PATH` |
