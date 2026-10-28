@@ -2,6 +2,8 @@
 
 Risk allocator and controller keeper for an ERC-2535 Diamond based ERC-4626 yield router.
 
+> This project was developed privately and published once it had been tested against its original design. Its full development history is published on a single `main` branch so reviewers can follow it in one place.
+
 Off-chain agent for the [Vault Router](https://github.com/jayeshy14/Vault-Router) ERC-4626 diamond. It reads
 live market state, decides a risk-gated target allocation, and submits
 curator-permissioned transactions on a schedule. It deploys **no oracle and no
