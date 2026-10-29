@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // Result is the outcome of a validation pass. OK is true only when Violations

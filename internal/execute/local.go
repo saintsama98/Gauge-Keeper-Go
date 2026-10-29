@@ -13,8 +13,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 
-	"github.com/vault-router-keeper/internal/bindings/vault"
-	ktypes "github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/bindings/vault"
+	ktypes "github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // Backend is the subset of bind.ContractBackend a LocalExecutor needs to bind a

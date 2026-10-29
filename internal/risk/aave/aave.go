@@ -1,8 +1,8 @@
 package aave
 
 import (
-	"github.com/vault-router-keeper/internal/brain"
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/brain"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // ConfiguredReader supplies operator-set risk profiles for Aave V3 supply

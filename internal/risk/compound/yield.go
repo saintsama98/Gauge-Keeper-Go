@@ -10,8 +10,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/vault-router-keeper/internal/bindings/comet"
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/bindings/comet"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // secondsPerYear annualizes Comet's per-second supply rate. Unlike Aave's

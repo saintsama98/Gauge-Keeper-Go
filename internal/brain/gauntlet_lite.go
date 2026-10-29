@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // GauntletLiteDecider is the default brain: a risk-gated, yield-maximizing

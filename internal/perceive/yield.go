@@ -1,6 +1,6 @@
 package perceive
 
-import "github.com/vault-router-keeper/pkg/types"
+import "github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 
 // YieldProvider maps a strategy id to an off-chain APY signal. It mirrors
 // brain.RiskProvider so APY is sourced through the same ports/adapters idiom as

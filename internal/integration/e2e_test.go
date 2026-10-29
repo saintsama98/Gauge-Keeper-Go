@@ -34,8 +34,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"github.com/vault-router-keeper/internal/perceive"
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/perceive"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 var (

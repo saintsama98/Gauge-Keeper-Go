@@ -5,8 +5,8 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/vault-router-keeper/internal/brain"
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/brain"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // Chain is the narrow on-chain read surface the Pendle reader needs, satisfied

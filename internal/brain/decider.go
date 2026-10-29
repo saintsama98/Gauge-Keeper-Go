@@ -5,7 +5,7 @@ package brain
 import (
 	"context"
 
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // Decider maps current vault state to a desired target allocation. A real

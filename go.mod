@@ -1,4 +1,4 @@
-module github.com/vault-router-keeper
+module github.com/saintsama98/Gauge-Keeper-Go
 
 go 1.25
 

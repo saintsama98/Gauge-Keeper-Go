@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 func newYield(c Chain, id types.StrategyID) *YieldReader {

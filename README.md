@@ -10,7 +10,7 @@ curator-permissioned transactions on a schedule. It deploys **no oracle and no
 contracts**. It reads the strategies' existing on-chain views (and one public
 API) and signs as the vault's curator.
 
-Module: `github.com/vault-router-keeper` · Go.
+Module: `github.com/saintsama98/Gauge-Keeper-Go` · Go.
 
 > Build note: this repo builds with `GOWORK=off` (it is excluded from any parent
 > Go workspace). Prefix go commands accordingly.
