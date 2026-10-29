@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // sid builds a StrategyID with a distinguishing first byte.

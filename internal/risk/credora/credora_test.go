@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // fakeDoer returns a canned HTTP response, standing in for the live endpoint.

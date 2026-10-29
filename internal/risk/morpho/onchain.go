@@ -7,10 +7,10 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/vault-router-keeper/internal/bindings/metamorpho"
-	"github.com/vault-router-keeper/internal/bindings/morphoblue"
-	"github.com/vault-router-keeper/internal/brain"
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/bindings/metamorpho"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/bindings/morphoblue"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/brain"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // blueCaller is the narrow read surface MorphoBlueReader needs from the Morpho

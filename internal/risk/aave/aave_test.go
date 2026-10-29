@@ -3,8 +3,8 @@ package aave
 import (
 	"testing"
 
-	"github.com/vault-router-keeper/internal/brain"
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/brain"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 func aid(b byte) types.StrategyID {

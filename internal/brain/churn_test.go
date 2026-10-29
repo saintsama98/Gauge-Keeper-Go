@@ -4,8 +4,8 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/vault-router-keeper/internal/validate"
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/validate"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // clampCase runs clampChurn over the given targets and proposed allocations and

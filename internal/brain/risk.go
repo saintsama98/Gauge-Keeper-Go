@@ -3,7 +3,7 @@ package brain
 import (
 	"math"
 
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // RiskInputs is the per-strategy risk view a RiskProvider supplies. It is the

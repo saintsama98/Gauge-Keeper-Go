@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/vault-router-keeper/internal/brain"
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/brain"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // Doer is the minimal HTTP transport the reader needs. The real *http.Client

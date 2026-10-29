@@ -11,8 +11,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 
-	"github.com/vault-router-keeper/internal/bindings/vault"
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/bindings/vault"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 func id(b byte) types.StrategyID {

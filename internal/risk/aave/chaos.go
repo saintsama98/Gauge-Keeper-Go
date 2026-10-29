@@ -7,9 +7,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/vault-router-keeper/internal/bindings/aavedata"
-	"github.com/vault-router-keeper/internal/brain"
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/bindings/aavedata"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/brain"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // reserveCaller is the narrow on-chain read surface AaveChaosReader needs from

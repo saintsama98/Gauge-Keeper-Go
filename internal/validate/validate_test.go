@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 func vid(b byte) types.StrategyID {

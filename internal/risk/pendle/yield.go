@@ -5,7 +5,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // rayLikeScale is the 1e18 fixed-point scale of the Pendle PT→asset rate.

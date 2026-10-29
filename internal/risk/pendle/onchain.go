@@ -7,9 +7,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/vault-router-keeper/internal/bindings/pendleoracle"
-	"github.com/vault-router-keeper/internal/bindings/pendlept"
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/bindings/pendleoracle"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/bindings/pendlept"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 var errUnconfigured = errors.New("pendle: strategy not configured")

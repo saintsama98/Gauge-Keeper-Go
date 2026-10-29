@@ -10,8 +10,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/vault-router-keeper/internal/bindings/vault"
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/bindings/vault"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // mockCaller is a deterministic bind.ContractCaller. It decodes the ABI

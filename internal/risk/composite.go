@@ -1,8 +1,8 @@
 package risk
 
 import (
-	"github.com/vault-router-keeper/internal/brain"
-	"github.com/vault-router-keeper/pkg/types"
+	"github.com/saintsama98/Gauge-Keeper-Go/internal/brain"
+	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
 // CompositeProvider routes each StrategyID to the facet adapter that owns it,
