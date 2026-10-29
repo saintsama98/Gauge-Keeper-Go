@@ -3,7 +3,6 @@ package brain
 import (
 	"context"
 	"log/slog"
-	"math"
 
 	"github.com/vault-router-keeper/pkg/types"
 )
@@ -110,23 +109,7 @@ func (d *GauntletLiteDecider) Decide(_ context.Context, state *types.VaultState)
 
 	// Step 4 — churn clamp: if total movement exceeds the per-call bound, scale
 	// every delta proportionally back toward the current targets.
-	if state.MaxRebalanceDeltaBps > 0 {
-		var total int
-		for i := range slots {
-			total += int(absDeltaBps(slots[i].alloc, slots[i].target))
-		}
-		if total > int(state.MaxRebalanceDeltaBps) {
-			ratio := float64(state.MaxRebalanceDeltaBps) / float64(total)
-			for i := range slots {
-				delta := float64(int(slots[i].alloc) - int(slots[i].target))
-				scaled := float64(slots[i].target) + math.Round(delta*ratio)
-				if scaled < 0 {
-					scaled = 0
-				}
-				slots[i].alloc = types.Bps(scaled)
-			}
-		}
-	}
+	clampChurn(slots, state.MaxRebalanceDeltaBps)
 
 	// Step 5 — emit every strategy (killed/quarantined explicitly 0).
 	targets := make(map[types.StrategyID]types.Bps, len(slots))
@@ -134,6 +117,82 @@ func (d *GauntletLiteDecider) Decide(_ context.Context, state *types.VaultState)
 		targets[slots[i].id] = slots[i].alloc
 	}
 	return &types.Allocation{Targets: targets}, nil
+}
+
+// clampChurn scales every delta proportionally back toward the current targets
+// when total movement exceeds maxDelta. A zero maxDelta means no bound.
+//
+// Increases and decreases are scaled as two separate budgets in integer bps.
+// The increase budget is rounded down and the decrease budget takes the rest of
+// the bound, so total movement never exceeds maxDelta and the invested sum never
+// rises above what an exact proportional scale would give. Each budget is then
+// split across its slots by largest remainder, so no slot moves past its own
+// proposal.
+func clampChurn(slots []slot, maxDelta types.Bps) {
+	if maxDelta == 0 {
+		return
+	}
+	var up, down int
+	for i := range slots {
+		if slots[i].alloc >= slots[i].target {
+			up += int(slots[i].alloc - slots[i].target)
+		} else {
+			down += int(slots[i].target - slots[i].alloc)
+		}
+	}
+	total := up + down
+	if total <= int(maxDelta) {
+		return
+	}
+	upBudget := up * int(maxDelta) / total
+	downBudget := min(down, int(maxDelta)-upBudget)
+
+	upMoves := splitBudget(slots, upBudget, up, true)
+	downMoves := splitBudget(slots, downBudget, down, false)
+	for i := range slots {
+		if slots[i].alloc >= slots[i].target {
+			slots[i].alloc = slots[i].target + types.Bps(upMoves[i])
+		} else {
+			slots[i].alloc = slots[i].target - types.Bps(downMoves[i])
+		}
+	}
+}
+
+// splitBudget divides budget across the slots moving in one direction (up when
+// increasing, otherwise down) in proportion to each slot's delta, by largest
+// remainder. Ties go to the lower index, so the result is deterministic.
+func splitBudget(slots []slot, budget, total int, increasing bool) []int {
+	moves := make([]int, len(slots))
+	if total == 0 {
+		return moves
+	}
+	rem := make([]int, len(slots))
+	given := 0
+	for i := range slots {
+		var delta int
+		switch {
+		case increasing && slots[i].alloc >= slots[i].target:
+			delta = int(slots[i].alloc - slots[i].target)
+		case !increasing && slots[i].alloc < slots[i].target:
+			delta = int(slots[i].target - slots[i].alloc)
+		default:
+			continue
+		}
+		moves[i] = delta * budget / total
+		rem[i] = delta * budget % total
+		given += moves[i]
+	}
+	for ; given < budget; given++ {
+		best := -1
+		for i := range slots {
+			if rem[i] > 0 && (best == -1 || rem[i] > rem[best]) {
+				best = i
+			}
+		}
+		moves[best]++
+		rem[best] = 0
+	}
+	return moves
 }
 
 // absDeltaBps is |a - b| without unsigned underflow.
