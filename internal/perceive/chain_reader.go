@@ -37,7 +37,7 @@ func NewChainReader(backend bind.ContractCaller, vaultAddr common.Address) (*Cha
 	return &ChainReader{caller: c}, nil
 }
 
-// Snapshot reads one consistent-enough view of vault state. APY is left zero —
+// Snapshot reads one consistent-enough view of vault state. APY is left zero,
 // it is an off-chain signal a RiskProvider/feed supplies, never read from chain.
 func (r *ChainReader) Snapshot(ctx context.Context) (*types.VaultState, error) {
 	opts := &bind.CallOpts{Context: ctx}

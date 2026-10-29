@@ -51,7 +51,7 @@ func (p Policy) liquidityCapBps(ttmSecs int64) types.Bps {
 // Reader implements brain.RiskProvider for Pendle PT strategies. Its primary
 // signal is the liquidity gate (LiquidityCapBps): a PT cannot be redeemed at par
 // before maturity, so the further from maturity, the tighter the structural cap.
-// The oracle-readiness check is a safety gate — an unseeded TWAP can revert, so
+// The oracle-readiness check is a safety gate, an unseeded TWAP can revert, so
 // an un-ready or unreadable market degrades to "no data" (the closed-form floor),
 // never a cap raise.
 //
@@ -97,7 +97,7 @@ func (r *Reader) Risk(id types.StrategyID) (brain.RiskInputs, bool) {
 	}
 	ttm := exp.Int64() - r.now()
 	if ttm <= 0 {
-		// Expired PT redeems 1:1 — fully liquid, no structural gate.
+		// Expired PT redeems 1:1, fully liquid, no structural gate.
 		return brain.RiskInputs{}, true
 	}
 	return brain.RiskInputs{

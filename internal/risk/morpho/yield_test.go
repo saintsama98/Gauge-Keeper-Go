@@ -40,7 +40,7 @@ func (f *fixtureDoer) Do(req *http.Request) (*http.Response, error) {
 }
 
 // liveFixture is the exact response shape recorded from the real API on
-// 2026-06-12 (Steakhouse USDC, chain 1) — the anti-hallucination oracle.
+// 2026-06-12 (Steakhouse USDC, chain 1), used as the reference value.
 const liveFixture = `{"data":{"vaultByAddress":{"address":"0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",` +
 	`"state":{"apy":0.043727269079311945,"netApy":0.04149617540233034}}},` +
 	`"extensions":{"complexity":50,"maximumComplexity":1000000}}`

@@ -4,7 +4,7 @@
 // exercises the WHOLE keeper against a REAL diamond: it stands up a fresh anvil,
 // deploys the Vault Router diamond via the diamond repo's forge script, then
 // builds and runs the keeper binary for ~one tick with a live signing executor,
-// and asserts the on-chain targetAllocation CHANGED — proving the full
+// and asserts the on-chain targetAllocation CHANGED, proving the full
 // perceive -> decide -> validate -> sign -> send loop end to end.
 //
 // It is gated behind the `integration` build tag so the normal gate
@@ -60,7 +60,7 @@ const (
 	// never a real secret.
 	anvilAcct0Key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 
-	// mockStrategyID is bytes32("mock") — the single strategy Deploy.s.sol registers
+	// mockStrategyID is bytes32("mock"), the single strategy Deploy.s.sol registers
 	// (logged via console2.logBytes32). The keeper allocates into it.
 	mockStrategyID = "0x6d6f636b00000000000000000000000000000000000000000000000000000000"
 )
@@ -154,7 +154,7 @@ func TestE2EFreshAnvilRebalance(t *testing.T) {
 		"KEEPER_VAULT_ADDRESS="+vaultAddr,
 		"KEEPER_CHAIN_ID="+chainID,
 		"KEEPER_DRY_RUN=false",
-		"KEEPER_BRAIN=gauntlet-lite",
+		"KEEPER_BRAIN=water-fill",
 		"KEEPER_RISK_PROVIDER=static",
 		"KEEPER_PRIVATE_KEY="+anvilAcct0Key,
 		// Short cadences so the first tick fires guard+rebalance+harvest immediately.
@@ -182,7 +182,7 @@ func TestE2EFreshAnvilRebalance(t *testing.T) {
 			"keeper output:\n%s", before, afterCast, tailLines(string(keeperOut), 40))
 	}
 	// The single mock strategy has a 60%% cap and a 20%% idle floor, so the
-	// gauntlet-lite water-fill targets the 6000 bps cap. We assert "changed and
+	// the water-fill brain targets the 6000 bps cap. We assert "changed and
 	// moved up", not an exact magic number, to stay robust to model tuning.
 	if afterCast <= before {
 		t.Fatalf("expected target to increase from %d, got %d", before, afterCast)
@@ -359,7 +359,7 @@ func tailLines(s string, n int) string {
 var _ = big.NewInt
 
 // =============================================================================
-// RUNBOOK — fresh-anvil vs --fork-url
+// RUNBOOK, fresh-anvil vs --fork-url
 // =============================================================================
 //
 // This test runs the FRESH-ANVIL variant: a clean local chain with the diamond
@@ -378,10 +378,10 @@ var _ = big.NewInt
 //	cd "$DIAMOND_REPO"
 //	forge script script/Deploy.s.sol:Deploy --rpc-url http://localhost:8547 \
 //	  --broadcast --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-//	# 3. run keeper one tick (KEEPER_DRY_RUN=false, gauntlet-lite, static risk)
+//	# 3. run keeper one tick (KEEPER_DRY_RUN=false, water-fill, static risk)
 //	# 4. assert: cast call <vault> "targetAllocation(bytes32)(uint16)" 0x6d6f636b...
 //
-// FORK-URL variant (testing against real Arbitrum protocol state — Aave V3 supply
+// FORK-URL variant (testing against real Arbitrum protocol state, Aave V3 supply
 // APR, Pendle oracles, live USDC) instead of mocks:
 //
 //	anvil --fork-url $ARBITRUM_RPC_URL --chain-id 42161 --port 8547
@@ -391,5 +391,5 @@ var _ = big.NewInt
 // / KEEPER_PENDLE_ORACLE / KEEPER_PENDLE_MARKETS). The fork variant exercises the
 // live risk/APY overlays; the fresh-anvil variant above exercises the control loop
 // deterministically. Note: the mock-based Deploy.s.sol assembles its OWN asset and
-// strategy, so on a fork it still uses mocks — the fork only matters once the
+// strategy, so on a fork it still uses mocks, the fork only matters once the
 // strategy facets point at real protocol addresses, which this test does not do.

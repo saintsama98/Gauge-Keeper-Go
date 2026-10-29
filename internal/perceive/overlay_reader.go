@@ -7,7 +7,7 @@ import (
 )
 
 // OverlayReader decorates any Reader, overlaying a live off-chain APY onto each
-// strategy in the snapshot. It is the ONLY place APY is ever written — the
+// strategy in the snapshot. It is the ONLY place APY is ever written, the
 // underlying ChainReader leaves APY 0 (APY is not on chain), so wrapping it here
 // keeps the pure vault reader untouched while still feeding the brain a real
 // yield signal where one exists.

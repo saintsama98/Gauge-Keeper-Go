@@ -31,7 +31,7 @@ type Backend interface {
 //
 // It stays dumb plumbing: the brain chose the targets and the validator + the
 // on-chain bounded executor both re-check them, so this layer never re-validates
-// caps / idle-floor / churn — it just signs and sends.
+// caps / idle-floor / churn, it just signs and sends.
 type LocalExecutor struct {
 	vault   *vault.VaultTransactor
 	auth    *bind.TransactOpts
@@ -64,7 +64,7 @@ func NewLocalExecutor(
 // Strategy-dispatching vault calls (rebalance/harvestAll) wrap each per-strategy
 // call in try/catch fault-tolerance (StrategyRebalanceSkipped). That breaks
 // eth_estimateGas: the estimator binary-searches for the SMALLEST gas where the
-// tx "succeeds" — and with the catch in place the tx succeeds even when the
+// tx "succeeds", and with the catch in place the tx succeeds even when the
 // inner strategy call runs OutOfGas and is silently skipped. Estimated-gas
 // rebalances therefore always skip expensive strategies (observed live: the
 // ~1.2M-gas Pendle USD3 swap OOG'd inside USDC.transferFrom while Aave/Morpho

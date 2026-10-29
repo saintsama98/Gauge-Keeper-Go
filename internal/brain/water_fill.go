@@ -7,23 +7,23 @@ import (
 	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
-// GauntletLiteDecider is the default brain: a risk-gated, yield-maximizing
+// WaterFillDecider is the default brain: a risk-gated, yield-maximizing
 // water-fill allocator. Yield is the objective; risk is the gate. It maximizes
 // effectiveYield(APY) − Lambda·EL per strategy while EL also caps each venue
 // (effectiveCapBps) and the liquidity gate caps it again. Idle reserve, owner
 // cap, liquidity cap and churn bound are all hard ceilings the fill never
 // crosses. It implements brain.Decider; StubDecider stays the default.
-type GauntletLiteDecider struct {
+type WaterFillDecider struct {
 	provider RiskProvider
 	model    RiskModel
 	log      *slog.Logger
 }
 
-func NewGauntletLiteDecider(r RiskProvider, m RiskModel, log *slog.Logger) *GauntletLiteDecider {
+func NewWaterFillDecider(r RiskProvider, m RiskModel, log *slog.Logger) *WaterFillDecider {
 	if log == nil {
 		log = slog.Default()
 	}
-	return &GauntletLiteDecider{provider: r, model: m, log: log}
+	return &WaterFillDecider{provider: r, model: m, log: log}
 }
 
 // slot is the per-strategy working state through the allocation pipeline.
@@ -36,10 +36,10 @@ type slot struct {
 	alloc  types.Bps // proposed new target
 }
 
-func (d *GauntletLiteDecider) Decide(_ context.Context, state *types.VaultState) (*types.Allocation, error) {
+func (d *WaterFillDecider) Decide(_ context.Context, state *types.VaultState) (*types.Allocation, error) {
 	slots := make([]slot, len(state.Strategies))
 
-	// Step 1 — per-strategy risk pass: derive each venue's effective cap, EL and
+	// Step 1, per-strategy risk pass: derive each venue's effective cap, EL and
 	// scoring yield. Quarantined and killed venues end up with cap 0.
 	for i, s := range state.Strategies {
 		sl := slot{id: s.ID, target: s.TargetBps}
@@ -64,7 +64,7 @@ func (d *GauntletLiteDecider) Decide(_ context.Context, state *types.VaultState)
 		slots[i] = sl
 	}
 
-	// Step 2 — water-fill the investable budget in StepBps chunks, always to the
+	// Step 2: water-fill the investable budget in StepBps chunks, always to the
 	// eligible strategy with the highest marginal score yield − Lambda·EL.
 	budget := types.Bps(0)
 	if state.IdleReserveBps < types.BpsDenominator {
@@ -100,18 +100,18 @@ func (d *GauntletLiteDecider) Decide(_ context.Context, state *types.VaultState)
 		budget -= chunk
 	}
 
-	// Step 3 — hysteresis: ignore sub-threshold moves to avoid churn for noise.
+	// Step 3, hysteresis: ignore sub-threshold moves to avoid churn for noise.
 	for i := range slots {
 		if absDeltaBps(slots[i].alloc, slots[i].target) < d.model.MinDeltaBps {
 			slots[i].alloc = slots[i].target
 		}
 	}
 
-	// Step 4 — churn clamp: if total movement exceeds the per-call bound, scale
+	// Step 4, churn clamp: if total movement exceeds the per-call bound, scale
 	// every delta proportionally back toward the current targets.
 	clampChurn(slots, state.MaxRebalanceDeltaBps)
 
-	// Step 5 — emit every strategy (killed/quarantined explicitly 0).
+	// Step 5: emit every strategy (killed/quarantined explicitly 0).
 	targets := make(map[types.StrategyID]types.Bps, len(slots))
 	for i := range slots {
 		targets[slots[i].id] = slots[i].alloc

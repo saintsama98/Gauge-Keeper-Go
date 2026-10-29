@@ -14,9 +14,9 @@ func sid(b byte) types.StrategyID {
 	return id
 }
 
-// newDecider wires a GauntletLiteDecider over the given static risk map.
-func newDecider(m map[types.StrategyID]RiskInputs) *GauntletLiteDecider {
-	return NewGauntletLiteDecider(NewStaticRiskProvider(m), DefaultRiskModel(), nil)
+// newDecider wires a WaterFillDecider over the given static risk map.
+func newDecider(m map[types.StrategyID]RiskInputs) *WaterFillDecider {
+	return NewWaterFillDecider(NewStaticRiskProvider(m), DefaultRiskModel(), nil)
 }
 
 func sumTargets(a *types.Allocation) types.Bps {

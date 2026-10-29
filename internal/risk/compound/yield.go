@@ -1,7 +1,7 @@
 // Package compound provides the keeper's live yield + risk adapters for a
 // Compound III (Comet) base-supply strategy. Both read the Comet market directly
 // over a read-only backend (keyless, no oracle deployed) and degrade to ok=false
-// when unconfigured — the honest no-data path, never a fabricated number.
+// when unconfigured, the honest no-data path, never a fabricated number.
 package compound
 
 import (

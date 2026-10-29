@@ -1,6 +1,6 @@
 // Package config loads keeper settings from environment variables. Secrets
-// (the curator private key) are referenced by env-var NAME only — never stored
-// here — so the key is read at runtime from a separate variable.
+// (the curator private key) are referenced by env-var NAME only and never stored
+// here, so the key is read at runtime from a separate variable.
 package config
 
 import (
@@ -18,21 +18,21 @@ type Config struct {
 	ChainID      int64
 	KeyEnv       string // name of the env var holding the curator private key
 	DryRun       bool
-	Brain        string // which Decider: "stub" (default) | "gauntlet-lite"
+	Brain        string // which Decider: "stub" (default) | "water-fill"
 
 	PollInterval         time.Duration
 	HarvestInterval      time.Duration
 	GuardInterval        time.Duration
 	RebalanceMinInterval time.Duration
 
-	// RiskProvider selects the EL signal layer wired into the gauntlet-lite brain:
-	//   "static"    (default) — empty StaticRiskProvider (current behaviour; closed-form floor only).
-	//   "composite" — route each StrategyID to its live adapter (Pendle/Aave/Credora).
+	// RiskProvider selects the EL signal layer wired into the water-fill brain:
+	//   "static"    (default): empty StaticRiskProvider (current behavior; closed-form floor only).
+	//   "composite": route each StrategyID to its live adapter (Pendle/Aave/Credora).
 	// Every live adapter degrades to ok=false when its external address/endpoint is
 	// unconfigured, so "composite" with no addresses behaves exactly like "static".
 	RiskProvider string
 
-	// --- Aave V3 live reserve-risk reader (AaveChaosReader) ---------------------
+	// --- Aave V3 live reserve-risk reader (AaveReserveReader) ---------------------
 	// AaveDataProvider is the Aave V3 ProtocolDataProvider address (allowed
 	// hardcoded-external-address operator exception). Empty => Aave adapter ok=false.
 	AaveDataProvider string
@@ -61,7 +61,7 @@ type Config struct {
 
 	// --- Credora (Morpho facet) GraphQL risk feed ------------------------------
 	// CredoraEndpoint is the operator-supplied Credora GraphQL URL. Empty =>
-	// Credora ok=false (the public Morpho API exposes NO rating field — see
+	// Credora ok=false (the public Morpho API exposes NO rating field, see
 	// internal/risk/credora; do NOT point this at api.morpho.org/graphql).
 	CredoraEndpoint string
 	// CredoraAPIKey is sent as a Bearer token (the real Credora API is auth-gated).
@@ -70,7 +70,7 @@ type Config struct {
 	CredoraMarkets map[types.StrategyID]string
 
 	// --- Morpho (MetaMorpho) public Blue-API yield feed ------------------------
-	// MorphoAPIEndpoint is Morpho's public GraphQL URL (no auth — unlike Credora,
+	// MorphoAPIEndpoint is Morpho's public GraphQL URL (no auth, unlike Credora,
 	// which stays the Morpho RISK source). Empty => yield adapter dormant and the
 	// brain sees Morpho at APY 0 (residual-budget-only in the water-fill).
 	MorphoAPIEndpoint string

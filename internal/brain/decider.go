@@ -1,5 +1,5 @@
 // Package brain computes the target allocation vector from vault state. This is
-// the swappable "intelligence" — the keeper loop never changes when it does.
+// the swappable "intelligence"; the keeper loop never changes when it does.
 package brain
 
 import (
@@ -15,7 +15,7 @@ type Decider interface {
 	Decide(ctx context.Context, state *types.VaultState) (*types.Allocation, error)
 }
 
-// StubDecider returns the current on-chain targets unchanged — it never proposes
+// StubDecider returns the current on-chain targets unchanged; it never proposes
 // a reallocation. This keeps the keeper "dull": a pure executor of harvest /
 // guard / withdraw-fulfillment until a real brain is added.
 type StubDecider struct{}

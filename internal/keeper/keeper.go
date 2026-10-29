@@ -99,11 +99,11 @@ func (k *Keeper) tick(ctx context.Context) error {
 }
 
 // plan turns (state, desired allocation, cadence) into the actions to fire this
-// tick. Mechanical only — the brain already chose the targets.
+// tick. Mechanical only, the brain already chose the targets.
 func (k *Keeper) plan(state *types.VaultState, alloc *types.Allocation, now time.Time) []types.Action {
 	var actions []types.Action
 
-	// Permissionless NAV checkpoint — safe even when paused / no curator key.
+	// Permissionless NAV checkpoint, safe even when paused / no curator key.
 	if k.sched.Due(taskGuard, now) {
 		actions = append(actions, types.Action{Kind: types.ActionGuardCheckpoint})
 		k.sched.Mark(taskGuard, now)
@@ -116,10 +116,10 @@ func (k *Keeper) plan(state *types.VaultState, alloc *types.Allocation, now time
 	}
 
 	// Reallocation, throttled. Two independent triggers:
-	//   (1) the brain's targets differ from on-chain — push the new targets and
+	//   (1) the brain's targets differ from on-chain, push the new targets and
 	//       rebalance to them (SetAllocation + Rebalance).
 	//   (2) targets are unchanged but deployed assets have drifted from those
-	//       targets — just Rebalance to the existing targets.
+	//       targets, just Rebalance to the existing targets.
 	// Without (2) the keeper would never deploy funds that arrive after the
 	// initial allocation: a deposit changes balances (and the gap to target)
 	// without changing the target bps, so allocationDiffers alone misses it.

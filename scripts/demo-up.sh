@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# demo-up.sh — bring up the FULL clickable demo stack and HOLD it.
+# demo-up.sh, bring up the FULL clickable demo stack and HOLD it.
 #
 # Unlike fork-demo.sh (which runs a scripted cast scenario then tears down),
 # this stands the stack up and KEEPS IT RUNNING so you drive everything by hand
@@ -33,12 +33,12 @@ RPC="http://127.0.0.1:${PORT}"
 CHAIN_ID=31337
 
 USDC=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
-# aEthUSDC reserve — impersonated as the USDC faucet (fork-only; touches no key).
+# aEthUSDC reserve, impersonated as the USDC faucet (fork-only; touches no key).
 USDC_WHALE=0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c
 
 # anvil account #0 = diamond owner AND curator (DeployFork default).
 DEPLOYER_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-# anvil accounts #1..#3 — the demo users to import into the browser wallet.
+# anvil accounts #1..#3, the demo users to import into the browser wallet.
 ALICE=0x70997970C51812dc3A010C7d01b50e0d17dc79C8
 BOB=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
 CAROL=0x90F79bf6EB2c4f870365E785982E1f101E93b906
@@ -129,7 +129,7 @@ PIDS+=($!)
 # --- 6. hold ------------------------------------------------------------------
 cat <<EOF
 
-\033[1;32m== demo stack is UP — drive it from the UI ==\033[0m
+\033[1;32m== demo stack is UP, drive it from the UI ==\033[0m
   RPC:     $RPC   (chain id $CHAIN_ID)
   Diamond: $VAULT
 

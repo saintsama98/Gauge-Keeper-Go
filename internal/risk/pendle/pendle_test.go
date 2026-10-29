@@ -108,11 +108,11 @@ func TestUnownedStrategy(t *testing.T) {
 }
 
 // End-to-end: a long-dated PT with the highest APY is still capped to the
-// structural liquidity ceiling through the real GauntletLiteDecider.
+// structural liquidity ceiling through the real WaterFillDecider.
 func TestLiquidityGateThroughBrain(t *testing.T) {
 	id := pid(1)
 	c := mockChain{ready: true, rate: big.NewInt(95e16), expiry: fixedNow + DefaultPolicy().MaxHorizonSecs}
-	dec := brain.NewGauntletLiteDecider(newReader(c, id), brain.DefaultRiskModel(), nil)
+	dec := brain.NewWaterFillDecider(newReader(c, id), brain.DefaultRiskModel(), nil)
 	state := &types.VaultState{Strategies: []types.StrategyState{
 		{ID: id, CapBps: 5000, APY: 0.30}, // most attractive, but illiquid
 	}}

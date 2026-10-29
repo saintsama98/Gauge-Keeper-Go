@@ -3,7 +3,7 @@
 /keeper
 *.exe
 
-# Env / secrets — NEVER commit the curator key
+# Env / secrets: NEVER commit the curator key
 .env
 *.pem
 *.key

@@ -12,7 +12,7 @@ import (
 	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
 
-// reserveCaller is the narrow on-chain read surface AaveChaosReader needs from
+// reserveCaller is the narrow on-chain read surface AaveReserveReader needs from
 // the Aave V3 ProtocolDataProvider (a.k.a. AaveProtocolDataProvider). It is
 // satisfied in production by the abigen binding's *AaveDataCaller (see
 // internal/bindings/aavedata) and mocked directly in unit tests so they never
@@ -85,7 +85,7 @@ const (
 	vendorELFrozen = 0.02   // additional EL floor when paused/frozen.
 )
 
-// AaveChaosReader is a LIVE on-chain brain.RiskProvider for Aave V3 supply
+// AaveReserveReader is a LIVE on-chain brain.RiskProvider for Aave V3 supply
 // strategies. It reads the reserve's utilization, active/frozen/paused state and
 // supply cap from the Aave ProtocolDataProvider and maps them to RiskInputs via
 // the documented-default curves above. Every signal is a live read; ok=false is
@@ -95,23 +95,23 @@ const (
 // It is the live successor to ConfiguredReader (operator-set profiles), which is
 // retained as a documented fallback for environments without a data-provider
 // address.
-type AaveChaosReader struct {
+type AaveReserveReader struct {
 	caller   reserveCaller  // nil => unconfigured backend (no-data path)
 	asset    common.Address // reserve to query == Vault.asset() (USDC)
 	provider common.Address // ProtocolDataProvider address (zero => unconfigured)
 	isAave   map[types.StrategyID]bool
 }
 
-// NewAaveChaosReader builds a live reader over a read-only backend (e.g.
+// NewAaveReserveReader builds a live reader over a read-only backend (e.g.
 // *ethclient.Client). provider is the Aave V3 ProtocolDataProvider address;
 // asset is the reserve to query (Vault.asset(), i.e. USDC); isAave marks which
 // strategy ids this adapter owns.
 //
 // If backend is nil or provider is the zero address, the reader is "unconfigured"
 // and every Risk call returns ok=false (brain falls back to its closed-form EL
-// floor — the honest no-data path, not a stub).
-func NewAaveChaosReader(backend bind.ContractCaller, provider, asset common.Address, isAave map[types.StrategyID]bool) *AaveChaosReader {
-	r := &AaveChaosReader{asset: asset, provider: provider, isAave: isAave}
+// floor, the honest no-data path, not a stub).
+func NewAaveReserveReader(backend bind.ContractCaller, provider, asset common.Address, isAave map[types.StrategyID]bool) *AaveReserveReader {
+	r := &AaveReserveReader{asset: asset, provider: provider, isAave: isAave}
 	if backend != nil && provider != (common.Address{}) {
 		// NewAaveDataCaller only fails if the embedded ABI is malformed, which
 		// is a build-time invariant of the generated binding; treat a failure as
@@ -123,16 +123,16 @@ func NewAaveChaosReader(backend bind.ContractCaller, provider, asset common.Addr
 	return r
 }
 
-// newAaveChaosReaderFromCaller is the test seam: it injects a reserveCaller
+// newAaveReserveReaderFromCaller is the test seam: it injects a reserveCaller
 // directly (a mock), bypassing the live binding construction.
-func newAaveChaosReaderFromCaller(caller reserveCaller, asset common.Address, isAave map[types.StrategyID]bool) *AaveChaosReader {
-	return &AaveChaosReader{caller: caller, asset: asset, isAave: isAave}
+func newAaveReserveReaderFromCaller(caller reserveCaller, asset common.Address, isAave map[types.StrategyID]bool) *AaveReserveReader {
+	return &AaveReserveReader{caller: caller, asset: asset, isAave: isAave}
 }
 
 // Risk reads the live reserve state for an Aave strategy and maps it to
 // RiskInputs. Returns ok=false when the id is not an Aave strategy, the backend
 // is unconfigured, or any on-chain read fails (degrade to closed-form floor).
-func (r *AaveChaosReader) Risk(id types.StrategyID) (brain.RiskInputs, bool) {
+func (r *AaveReserveReader) Risk(id types.StrategyID) (brain.RiskInputs, bool) {
 	if r == nil || r.caller == nil || !r.isAave[id] {
 		return brain.RiskInputs{}, false
 	}
@@ -160,7 +160,7 @@ func (r *AaveChaosReader) Risk(id types.StrategyID) (brain.RiskInputs, bool) {
 	// decimals, so the ratio is unitless). Guard totalAToken == 0 => util = 0.
 	util := utilization(data.TotalStableDebt, data.TotalVariableDebt, data.TotalAToken)
 
-	// Step 1 — hard stops on the liquidity haircut.
+	// Step 1: hard stops on the liquidity haircut.
 	if paused {
 		out.LiquidityHaircut = haircutPaused // 1.0: capital cannot exit.
 	}
@@ -171,18 +171,18 @@ func (r *AaveChaosReader) Risk(id types.StrategyID) (brain.RiskInputs, bool) {
 		out.DepegWatch = true
 	}
 
-	// Step 2 — utilization -> liquidity stress (composed via max with step 1).
+	// Step 2: utilization -> liquidity stress (composed via max with step 1).
 	if hu := utilHaircut(util); hu > out.LiquidityHaircut {
 		out.LiquidityHaircut = hu
 	}
 
-	// Step 3 — supply-cap headroom (informational liquidity ceiling).
+	// Step 3: supply-cap headroom (informational liquidity ceiling).
 	if caps.SupplyCap != nil && caps.SupplyCap.Sign() > 0 {
 		out.HasLiquidityCap = true
 		out.LiquidityCapBps = supplyHeadroomBps(caps.SupplyCap, cfg.Decimals, data.TotalAToken)
 	}
 
-	// Step 4 — vendor EL channel: smooth util->EL curve.
+	// Step 4: vendor EL channel: smooth util->EL curve.
 	out.HasVendor = true
 	out.VendorEL = vendorEL(util)
 	if paused || !cfg.IsActive || cfg.IsFrozen {
@@ -196,7 +196,7 @@ func (r *AaveChaosReader) Risk(id types.StrategyID) (brain.RiskInputs, bool) {
 
 // utilization computes (stableDebt + variableDebt) / totalAToken as a float in
 // token-decimal units (the ratio is unitless). totalAToken == 0 (or nil) yields
-// 0 — an empty reserve has no withdrawal contention.
+// 0, an empty reserve has no withdrawal contention.
 func utilization(stableDebt, variableDebt, totalAToken *big.Int) float64 {
 	if totalAToken == nil || totalAToken.Sign() <= 0 {
 		return 0

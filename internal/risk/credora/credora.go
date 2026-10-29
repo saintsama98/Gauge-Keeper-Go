@@ -22,7 +22,7 @@ type Doer interface {
 // StrategyID to its Morpho market key, fetches the Credora risk rating over
 // GraphQL, and maps that rating to a vendor expected-loss. Any failure (no
 // market mapping, transport error, non-200, unparseable rating) degrades to
-// "no data" (false) so the brain falls back to the closed-form floor — a broken
+// "no data" (false) so the brain falls back to the closed-form floor, a broken
 // or missing Credora feed can never raise an allocation.
 type Reader struct {
 	endpoint string
