@@ -18,8 +18,8 @@ func weiRateToFloat(rate *big.Int) float64 {
 }
 
 // secondsPerYear is the compounding base for the fixed-to-maturity implied APY
-// (365d vs 365.25d / act-360 is a modeling choice). The INPUTS
-// — PT→asset rate and PT expiry — are 100% live on-chain reads; only this
+// (365d vs 365.25d / act-360 is a modeling choice). The inputs,
+// PT→asset rate and PT expiry, are live on-chain reads; only this
 // constant and the annualization formula are documented defaults, not data.
 const secondsPerYear = 365 * 24 * 60 * 60
 
@@ -29,7 +29,7 @@ const secondsPerYear = 365 * 24 * 60 * 60
 // redeems 1:1 at expiry, so holding to maturity yields (1/discount)^(yr/ttm) - 1.
 //
 // It reuses the existing on-chain Chain surface (OracleReady / PtToAssetRate /
-// Expiry) — no new ABI or binding. Any failure (not owned, oracle un-ready,
+// Expiry), no new ABI or binding. Any failure (not owned, oracle un-ready,
 // non-positive/unreadable rate, non-positive time-to-maturity) returns ok=false
 // so the OverlayReader leaves APY at 0 (the brain then water-fills by EL alone).
 // This NEVER fabricates a yield: every number traces to a live read.
@@ -74,7 +74,7 @@ func (r *YieldReader) APY(id types.StrategyID) (float64, bool) {
 	}
 	ttm := exp.Int64() - r.now()
 	if ttm <= 0 {
-		// Expired/at-maturity PT redeems 1:1 — no forward fixed yield to overlay.
+		// Expired/at-maturity PT redeems 1:1, no forward fixed yield to overlay.
 		return 0, false
 	}
 

@@ -121,13 +121,13 @@ func aaveID(b byte) types.StrategyID {
 
 var usdcAsset = common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48")
 
-func reader(m reserveCaller) *AaveChaosReader {
-	return newAaveChaosReaderFromCaller(m, usdcAsset, map[types.StrategyID]bool{aaveID(1): true})
+func reader(m reserveCaller) *AaveReserveReader {
+	return newAaveReserveReaderFromCaller(m, usdcAsset, map[types.StrategyID]bool{aaveID(1): true})
 }
 
 const floatTol = 1e-9
 
-func TestAaveChaosReader(t *testing.T) {
+func TestAaveReserveReader(t *testing.T) {
 	// decimals=6, supplyCap=2,000,000 whole USDC => capBase=2e6*1e6.
 	cases := []struct {
 		name string
@@ -302,14 +302,14 @@ func TestNotAaveStrategyNoData(t *testing.T) {
 
 func TestUnconfiguredBackendNoData(t *testing.T) {
 	// nil backend + zero provider => unconfigured => no-data path.
-	r := NewAaveChaosReader(nil, common.Address{}, usdcAsset, map[types.StrategyID]bool{aaveID(1): true})
+	r := NewAaveReserveReader(nil, common.Address{}, usdcAsset, map[types.StrategyID]bool{aaveID(1): true})
 	if _, ok := r.Risk(aaveID(1)); ok {
 		t.Errorf("unconfigured reader: ok=true, want false")
 	}
 }
 
 func TestNilReaderNoData(t *testing.T) {
-	var r *AaveChaosReader
+	var r *AaveReserveReader
 	if _, ok := r.Risk(aaveID(1)); ok {
 		t.Errorf("nil reader: ok=true, want false")
 	}
@@ -336,10 +336,10 @@ func TestReadErrorDegrades(t *testing.T) {
 }
 
 // End-to-end: the reader's live signal flows through the real
-// GauntletLiteDecider without error and the decider produces a target. This
+// WaterFillDecider without error and the decider produces a target. This
 // adapter contributes the liquidity-haircut and vendor-EL channels; it does NOT
 // set the market-price leg (LiqPriceRatio/Sigma), so by design its closed-form PD
-// is 0 and a paused reserve does not by itself drop the cap below the owner cap —
+// is 0 and a paused reserve does not by itself drop the cap below the owner cap,
 // the haircut only bites once another adapter (e.g. a depeg oracle) supplies the
 // price barrier. This test pins that documented composition rather than claiming
 // a gate the math does not produce.
@@ -348,7 +348,7 @@ func TestSignalFlowsThroughBrain(t *testing.T) {
 		totalAToken: usdc(1_000_000), totalVariableDebt: usdc(900_000),
 		decimals: big.NewInt(6), supplyCap: big.NewInt(0), isActive: true, paused: true,
 	}
-	dec := brain.NewGauntletLiteDecider(reader(m), brain.DefaultRiskModel(), nil)
+	dec := brain.NewWaterFillDecider(reader(m), brain.DefaultRiskModel(), nil)
 	state := &types.VaultState{Strategies: []types.StrategyState{
 		{ID: aaveID(1), CapBps: 5000, APY: 0.10},
 	}}

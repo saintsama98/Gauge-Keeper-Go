@@ -40,7 +40,7 @@ Packages:
 | Package | Role |
 |---|---|
 | `internal/perceive` | Builds the `VaultState` snapshot: `chain_reader` reads the diamond (totalAssets, idle, per-strategy target/assets/cap/quarantine, idle reserve, churn bound); `overlay_reader` layers the live **APY** from yield providers onto it. |
-| `internal/brain` | `GauntletLiteDecider` (`gauntlet_lite.go`) + `RiskModel`/`RiskInputs` (`risk.go`). The only component with allocation intelligence. |
+| `internal/brain` | `WaterFillDecider` (`water_fill.go`) + `RiskModel`/`RiskInputs` (`risk.go`). The only component with allocation intelligence. |
 | `internal/risk` | Live **risk** providers per venue + `composite.go` router (StrategyID → adapter). |
 | `internal/validate` | Re-checks every hard bound off-chain; on failure emits the current on-chain targets (a no-op) so an out-of-bounds allocation is never pushed. |
 | `internal/trigger` | Scheduler that fires guard / harvest / rebalance on their cadences. |
@@ -57,7 +57,7 @@ curator-permissioned, observable on-chain, and overridable by governance.
 
 ## The brain (risk-gated water-fill)
 
-`GauntletLiteDecider.Decide` maximizes yield subject to risk:
+`WaterFillDecider.Decide` maximizes yield subject to risk:
 
 1. **Per-strategy pass.** For each venue compute the scoring yield
    `effectiveYield(APY)`, the expected loss `EL`, and a **risk-adjusted cap**
@@ -85,7 +85,7 @@ routed by `bytes32` StrategyID. Every read is keyless and live unless noted.
 
 ### Aave V3: `bytes32("aave")`
 - **Yield** (`internal/risk/aave/yield.go`): Aave V3 `ProtocolDataProvider.getReserveData().liquidityRate` (RAY, 1e27) → supply APR = `liquidityRate / 1e27` (already annualized).
-- **Risk** (`internal/risk/aave/chaos.go`, `AaveChaosReader`): reads utilization (`totalDebt / totalAToken`), supply cap, and active/frozen/paused state → `LiquidityHaircut` (utilization curve) + modeled EL (ramps above 80% utilization) + a supply-cap liquidity ceiling. `aave.go` holds a conservative configured-profile fallback for when the data provider is unset.
+- **Risk** (`internal/risk/aave/reserve.go`, `AaveReserveReader`): reads utilization (`totalDebt / totalAToken`), supply cap, and active/frozen/paused state → `LiquidityHaircut` (utilization curve) + modeled EL (ramps above 80% utilization) + a supply-cap liquidity ceiling. `aave.go` holds a conservative configured-profile fallback for when the data provider is unset.
 - **Env**: `KEEPER_AAVE_DATA_PROVIDER`, `KEEPER_AAVE_ASSET`, `KEEPER_AAVE_STRATEGY_IDS`.
 
 ### Compound V3 (Comet): `bytes32("compound")`
@@ -125,7 +125,7 @@ Core env (see `.env.example` / `.env.fork`):
 | `KEEPER_CHAIN_ID` | Chain id. |
 | `KEEPER_PRIVATE_KEY` / `KEEPER_KEY_ENV` | Curator signing key (env-indirected). |
 | `KEEPER_DRY_RUN` | `true` = decide + log, never send. |
-| `KEEPER_BRAIN` | Decider selection (`gauntlet-lite`). |
+| `KEEPER_BRAIN` | Decider selection (`water-fill`). |
 | `KEEPER_RISK_PROVIDER` | `static` (closed-form floor only) or `composite` (route each id to its live adapter). |
 | `KEEPER_POLL_INTERVAL` / `KEEPER_GUARD_INTERVAL` / `KEEPER_HARVEST_INTERVAL` / `KEEPER_REBALANCE_MIN_INTERVAL` | Loop cadences. |
 

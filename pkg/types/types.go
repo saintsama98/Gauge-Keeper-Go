@@ -38,7 +38,7 @@ type VaultState struct {
 	IdleAssets           *big.Int
 	IdleReserveBps       Bps
 	MaxRebalanceDeltaBps Bps
-	Paused               bool // GuardFacet.paused — no curator txns while true
+	Paused               bool // GuardFacet.paused, no curator txns while true
 	Strategies           []StrategyState
 	PendingWithdraws     []WithdrawRequest
 }

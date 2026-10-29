@@ -63,14 +63,14 @@ func main() {
 
 	var decider brain.Decider
 	switch cfg.Brain {
-	case "gauntlet-lite":
+	case "water-fill":
 		rp := buildRiskProvider(cfg, client, log)
-		// Overlay live APY onto the snapshot (only the gauntlet-lite brain ranks
+		// Overlay live APY onto the snapshot (only the water-fill brain ranks
 		// by yield; the stub echoes targets). Pass-through when no live yield feed.
 		if yp := buildYieldProvider(cfg, client, log); yp != nil {
 			reader = perceive.NewOverlayReader(reader, yp)
 		}
-		decider = brain.NewGauntletLiteDecider(rp, brain.DefaultRiskModel(), log)
+		decider = brain.NewWaterFillDecider(rp, brain.DefaultRiskModel(), log)
 	default:
 		decider = brain.NewStubDecider()
 	}
@@ -107,13 +107,13 @@ func buildReader(cfg *config.Config, client *ethclient.Client, log *slog.Logger)
 	return r
 }
 
-// buildRiskProvider builds the EL signal layer wired into the gauntlet-lite
-// brain. The default ("static") preserves the prior behaviour: an empty
+// buildRiskProvider builds the EL signal layer wired into the water-fill
+// brain. The default ("static") preserves the prior behavior: an empty
 // StaticRiskProvider => closed-form EL floor for every strategy. With
 // KEEPER_RISK_PROVIDER=composite, each StrategyID is routed to its LIVE adapter
 // (Pendle on-chain / Aave ProtocolDataProvider / Credora GraphQL). Every adapter
 // degrades to ok=false when its external address/endpoint is unconfigured, so
-// "composite" with no addresses is observably identical to "static" — the honest
+// "composite" with no addresses is observably identical to "static", the honest
 // no-data path, never a stub.
 func buildRiskProvider(cfg *config.Config, client *ethclient.Client, log *slog.Logger) brain.RiskProvider {
 	if cfg.RiskProvider != "composite" {
@@ -143,7 +143,7 @@ func buildRiskProvider(cfg *config.Config, client *ethclient.Client, log *slog.L
 		for _, id := range cfg.AaveStrategyIDs {
 			isAave[id] = true
 		}
-		ar := aave.NewAaveChaosReader(callerOrNil(client), common.HexToAddress(cfg.AaveDataProvider), common.HexToAddress(cfg.AaveAsset), isAave)
+		ar := aave.NewAaveReserveReader(callerOrNil(client), common.HexToAddress(cfg.AaveDataProvider), common.HexToAddress(cfg.AaveAsset), isAave)
 		for _, id := range cfg.AaveStrategyIDs {
 			routes[id] = ar
 		}
@@ -166,7 +166,7 @@ func buildRiskProvider(cfg *config.Config, client *ethclient.Client, log *slog.L
 		log.Info("risk: compound reader wired", "strategies", len(cfg.CompoundStrategyIDs), "live", live)
 	}
 
-	// Morpho (MetaMorpho facet): KEYLESS on-chain risk reader over Morpho Blue —
+	// Morpho (MetaMorpho facet): KEYLESS on-chain risk reader over Morpho Blue,
 	// the free, no-subscription alternative to the auth-gated Credora feed. It
 	// derives EL from each vault's live per-market utilization and withdrawal
 	// liquidity. Degrades to ok=false when client/blue absent (closed-form floor).
@@ -184,7 +184,7 @@ func buildRiskProvider(cfg *config.Config, client *ethclient.Client, log *slog.L
 	}
 
 	// Credora (Morpho facet): the auth-gated GraphQL rating vendor. Only wired
-	// when an endpoint is supplied — a dormant Credora must NOT shadow the keyless
+	// when an endpoint is supplied, a dormant Credora must NOT shadow the keyless
 	// on-chain reader above. When live it OVERRIDES the on-chain reader for its
 	// ids (the operator opted into the paid vendor rating).
 	if len(cfg.CredoraMarkets) > 0 && cfg.CredoraEndpoint != "" {
@@ -261,7 +261,7 @@ func buildYieldProvider(cfg *config.Config, client *ethclient.Client, log *slog.
 	}
 
 	// Morpho: MetaMorpho net APY over the public Blue GraphQL API (no auth).
-	// Yield only — Morpho RISK stays with the (auth-gated, currently dormant)
+	// Yield only, Morpho RISK stays with the (auth-gated, currently dormant)
 	// Credora adapter. Empty endpoint/vault map => no route, brain sees APY 0.
 	if cfg.MorphoAPIEndpoint != "" && len(cfg.MorphoVaults) > 0 {
 		yr := morpho.NewYieldReader(nil, cfg.MorphoAPIEndpoint, cfg.ChainID, cfg.MorphoVaults)
@@ -292,7 +292,7 @@ func pendleMarketConfigs(cfg *config.Config) map[types.StrategyID]pendle.MarketC
 }
 
 // callerOrNil returns the client as a bind.ContractCaller, or nil when the client
-// is nil — so a nil *ethclient.Client does not become a non-nil interface holding
+// is nil, so a nil *ethclient.Client does not become a non-nil interface holding
 // a nil pointer (which would defeat the adapter's nil-backend no-data guard).
 func callerOrNil(client *ethclient.Client) bind.ContractCaller {
 	if client == nil {
@@ -322,6 +322,6 @@ func buildExecutor(cfg *config.Config, client *ethclient.Client, log *slog.Logge
 		log.Error("build LocalExecutor", "err", err)
 		os.Exit(1)
 	}
-	log.Warn("execute: LIVE LocalExecutor — transactions will be signed and sent", "vault", cfg.VaultAddress)
+	log.Warn("execute: LIVE LocalExecutor, transactions will be signed and sent", "vault", cfg.VaultAddress)
 	return e
 }

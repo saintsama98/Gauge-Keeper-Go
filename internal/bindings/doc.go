@@ -2,13 +2,17 @@
 // contract gets its own subpackage; the raw ABIs live in /abi and the bindings
 // are regenerated with `make bindings`.
 //
-//	bindings/vault     — Vault Router diamond views (Allocator/Guard/WithdrawQueue, ERC-4626)
-//	bindings/aavepool  — Aave V3 UiPoolDataProvider
-//	bindings/chaosrisk — Chaos Labs RiskOracle getter (not generated)
-//	bindings/redstone  — RedStone push price adapter, AggregatorV3 (not generated)
+//	bindings/vault        Vault Router diamond views (Allocator, Guard, WithdrawQueue, ERC-4626)
+//	bindings/aavedata     Aave V3 ProtocolDataProvider reserve getters
+//	bindings/aavepool     Aave V3 Pool
+//	bindings/comet        Compound V3 Comet (utilization, supply rate)
+//	bindings/morphoblue   Morpho Blue singleton market reads
+//	bindings/metamorpho   MetaMorpho vault reads
+//	bindings/pendleoracle Pendle PYLpOracle
+//	bindings/pendlept     Pendle PT
 //
 // Isolating generated code here keeps the domain (pkg/types) and the ports
-// (internal/brain, perceive, trigger, execute) free of chain-specific types —
-// the ports-and-adapters boundary. Keep both the ABIs and the generated code in
-// version control so builds are reproducible offline.
+// (internal/brain, perceive, trigger, execute) free of chain-specific types.
+// Both the ABIs and the generated code are kept in version control so builds
+// are reproducible offline.
 package bindings

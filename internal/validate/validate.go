@@ -1,7 +1,7 @@
 // Package validate is the keeper's safety stage, modeled on the Chaos-Agents
 // check()→execute() pattern (MIT, https://github.com/ChaosLabsInc/chaos-agents):
 // before any allocation reaches the executor, every hard bound is re-derived
-// off-chain from the same VaultState the brain saw. It is defense in depth — the
+// off-chain from the same VaultState the brain saw. It is defense in depth, the
 // vault rejects a bad allocation on-chain anyway, but re-checking here turns a
 // reverted (gas-burning, alerting) transaction into a skipped one.
 //

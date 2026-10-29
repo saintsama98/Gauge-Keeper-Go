@@ -9,7 +9,7 @@ import (
 // then delegates the EL lookup to that adapter. It implements brain.RiskProvider,
 // so the brain sees one provider regardless of how many heterogeneous feeds sit
 // behind it. A strategy with no registered adapter reports "no data" (false),
-// which the brain treats as the closed-form floor (UnknownEL) — never a reason
+// which the brain treats as the closed-form floor (UnknownEL), never a reason
 // to raise a cap.
 type CompositeProvider struct {
 	routes map[types.StrategyID]brain.RiskProvider

@@ -18,8 +18,8 @@ import (
 // names exactly, so the binding implements it with no adapter) and mocked
 // directly in unit tests so they never touch a live chain.
 //
-// reserveCaller (in chaos.go) is a superset of this surface, so the live
-// *aavedata.AaveDataCaller used by AaveChaosReader also satisfies this — but the
+// reserveCaller (in reserve.go) is a superset of this surface, so the live
+// *aavedata.AaveDataCaller used by AaveReserveReader also satisfies this, but the
 // yield reader declares only what it reads.
 type liquidityRateCaller interface {
 	GetReserveData(opts *bind.CallOpts, asset common.Address) (struct {
@@ -56,10 +56,10 @@ func rayToFloat(ray *big.Int) float64 {
 // APR in RAY) from the live ProtocolDataProvider and returns it as a decimal
 // APR fraction (LiquidityRate / 1e27).
 //
-// It reuses the same aavedata binding/caller pattern as AaveChaosReader: a live
+// It reuses the same aavedata binding/caller pattern as AaveReserveReader: a live
 // *aavedata.AaveDataCaller built over the read-only backend, or a unconfigured
 // no-data path. Returns ok=false when the id is not an Aave strategy, the
-// backend/provider is absent, or the read fails / is non-positive — the honest
+// backend/provider is absent, or the read fails / is non-positive, the honest
 // no-data path: the OverlayReader then leaves APY at 0 and the brain water-fills
 // by EL alone. This NEVER fabricates a yield: every number traces to a live read.
 type YieldReader struct {
@@ -74,7 +74,7 @@ type YieldReader struct {
 // strategy ids this adapter owns.
 //
 // If backend is nil or provider is the zero address, the reader is unconfigured
-// and every APY call returns ok=false (the OverlayReader leaves APY at 0 — the
+// and every APY call returns ok=false (the OverlayReader leaves APY at 0, the
 // honest no-data path, not a stub).
 func NewYieldReader(backend bind.ContractCaller, provider, asset common.Address, isAave map[types.StrategyID]bool) *YieldReader {
 	r := &YieldReader{asset: asset, isAave: isAave}

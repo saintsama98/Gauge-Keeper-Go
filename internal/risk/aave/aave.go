@@ -9,7 +9,7 @@ import (
 // strategies.
 //
 // Grounding note. The Aave facet in
-// this stack reads its position via aToken.balanceOf only — IAavePool exposes
+// this stack reads its position via aToken.balanceOf only, IAavePool exposes
 // just supply/withdraw, and there is NO UiPoolDataProvider / reserve-data getter
 // in the diamond or its dependencies. A live utilization/paused/cap feed
 // therefore needs an externally-sourced Aave V3 data-provider ABI. Without one,
@@ -36,7 +36,7 @@ func (r *ConfiguredReader) Risk(id types.StrategyID) (brain.RiskInputs, bool) {
 // DefaultProfile is a conservative profile for an Aave V3 stablecoin supply
 // position: pegged collateral with a small liquidity haircut standing in for the
 // withdrawal/utilization risk that cannot currently be read live. Its closed-form
-// EL is well below the soft threshold, so it does not gate a healthy market —
+// EL is well below the soft threshold, so it does not gate a healthy market,
 // it only documents the facet's risk posture and gives operators a tuning point.
 func DefaultProfile() brain.RiskInputs {
 	return brain.RiskInputs{

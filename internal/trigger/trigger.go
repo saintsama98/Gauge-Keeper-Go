@@ -1,5 +1,5 @@
 // Package trigger is the heartbeat layer: it decides WHEN cadence-based actions
-// are due. Threshold/event triggers (APY-drift, hysteresis) belong here too —
+// are due. Threshold/event triggers (APY-drift, hysteresis) belong here too,
 // add them as additional Scheduler implementations or wrap this one.
 package trigger
 

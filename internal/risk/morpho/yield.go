@@ -28,7 +28,7 @@ type gqlResponse struct {
 	Data struct {
 		VaultByAddress struct {
 			State struct {
-				NetApy float64 `json:"netApy"`
+				NetAPY float64 `json:"netApy"`
 			} `json:"state"`
 		} `json:"vaultByAddress"`
 	} `json:"data"`
@@ -41,7 +41,7 @@ type gqlResponse struct {
 // Each owned StrategyID maps to its vault address; APY() POSTs one GraphQL
 // query and returns state.netApy as a decimal fraction. Unowned ids, an empty
 // endpoint, transport errors, GraphQL errors, and non-positive rates all
-// return ok=false (no-data) — never a fabricated number.
+// return ok=false (no-data), never a fabricated number.
 type YieldReader struct {
 	doer     Doer
 	endpoint string
@@ -102,7 +102,7 @@ func (r *YieldReader) APY(id types.StrategyID) (float64, bool) {
 	if len(out.Errors) > 0 {
 		return 0, false
 	}
-	apy := out.Data.VaultByAddress.State.NetApy
+	apy := out.Data.VaultByAddress.State.NetAPY
 	if apy <= 0 {
 		return 0, false
 	}

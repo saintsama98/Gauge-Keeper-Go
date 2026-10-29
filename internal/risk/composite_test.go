@@ -55,7 +55,7 @@ func (f fakeDoer) Do(*http.Request) (*http.Response, error) {
 }
 
 // End-to-end: a worst-rated (D) Credora market, routed through the composite,
-// must drive that strategy's target to 0 through the real GauntletLiteDecider.
+// must drive that strategy's target to 0 through the real WaterFillDecider.
 func TestCompositeKillThroughBrain(t *testing.T) {
 	id := sid(7)
 	cr := credora.NewReader(
@@ -65,7 +65,7 @@ func TestCompositeKillThroughBrain(t *testing.T) {
 		map[types.StrategyID]string{id: "morpho-usdc"},
 	)
 	comp := risk.NewCompositeProvider(map[types.StrategyID]brain.RiskProvider{id: cr})
-	dec := brain.NewGauntletLiteDecider(comp, brain.DefaultRiskModel(), nil)
+	dec := brain.NewWaterFillDecider(comp, brain.DefaultRiskModel(), nil)
 
 	state := &types.VaultState{Strategies: []types.StrategyState{
 		{ID: id, CapBps: 5000, APY: 0.10}, // attractive yield, but rated D

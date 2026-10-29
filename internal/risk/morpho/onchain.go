@@ -79,8 +79,8 @@ const (
 //   - the fraction of the vault's assets NOT currently withdrawable (borrowed out)
 //     -> a liquidity haircut and an additional EL penalty
 //
-// It needs NO API key, NO subscription, and NO vendor relationship — only an RPC
-// endpoint — which is why it is the free alternative to the auth-gated Credora
+// It needs NO API key, NO subscription, and NO vendor relationship, only an RPC
+// endpoint, which is why it is the free alternative to the auth-gated Credora
 // rating feed (see internal/risk/credora). The brain composes VendorEL via max()
 // with its closed-form EL, so this can only ever tighten an allocation, never
 // loosen it. ok=false (the honest no-data path -> closed-form floor) is returned
@@ -102,7 +102,7 @@ type vaultEntry struct {
 //
 // If backend is nil or blue is the zero address, the reader is "unconfigured"
 // and every Risk call returns ok=false (the brain falls back to its closed-form
-// EL floor — the honest no-data path, not a stub).
+// EL floor, the honest no-data path, not a stub).
 func NewMorphoBlueReader(backend bind.ContractCaller, blue common.Address, vaults map[types.StrategyID]common.Address) *MorphoBlueReader {
 	r := &MorphoBlueReader{vaults: map[types.StrategyID]vaultEntry{}}
 	if backend == nil || blue == (common.Address{}) {

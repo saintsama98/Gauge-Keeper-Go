@@ -146,7 +146,7 @@ func (m RiskModel) closedFormEL(r RiskInputs) float64 {
 	return clamp01(pd * lgd)
 }
 
-// expectedLoss composes the closed-form EL with any vendor EL via max() — a
+// expectedLoss composes the closed-form EL with any vendor EL via max(), a
 // vendor feed can only raise loss (tighten), never lower it.
 func (m RiskModel) expectedLoss(r RiskInputs) float64 {
 	el := m.closedFormEL(r)

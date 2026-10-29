@@ -13,11 +13,9 @@ import (
 
 // Executor submits a single Action and returns its tx hash.
 //
-// Swap the target later WITHOUT touching the keeper loop:
-//   - LocalExecutor    : self-hosted bot signs with the curator key (TODO).
-//   - GelatoExecutor   : a Gelato TS Web3 Function calls this service to act.
-//   - ChainlinkExecutor: permissionless triggers (guardCheckpoint) via on-chain upkeep.
-//   - DefenderExecutor : OpenZeppelin Defender Relayer holds the key.
+// LocalExecutor (local.go) signs with the curator key and LogExecutor logs
+// without sending. Another signer, such as a relayer that holds the key, can
+// implement this interface without touching the keeper loop.
 type Executor interface {
 	Execute(ctx context.Context, action types.Action) (txHash string, err error)
 }

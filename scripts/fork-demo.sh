@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
-# fork-demo.sh — realtime end-to-end demo on an ETHEREUM MAINNET fork.
-# (Local replica of mainnet state — no real funds can be touched.)
+# fork-demo.sh, realtime end-to-end demo on an ETHEREUM MAINNET fork.
+# (Local replica of mainnet state, no real funds can be touched.)
 #
 # Stands up: anvil fork -> real-facet diamond (DeployFork.s.sol in the diamond
 # repo) -> keeper with composite (LIVE) risk layer -> simulated users
@@ -28,12 +28,12 @@ PORT=8549
 RPC="http://127.0.0.1:${PORT}"
 
 USDC=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
-# aEthUSDC holds the Aave pool's USDC liquidity — impersonated as the demo's
+# aEthUSDC holds the Aave pool's USDC liquidity, impersonated as the demo's
 # USDC faucet (fork-only trick; never touches a real key).
 USDC_WHALE=0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c
 
 DEPLOYER_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-# anvil accounts #1..#3 — the fake users.
+# anvil accounts #1..#3, the fake users.
 ALICE=0x70997970C51812dc3A010C7d01b50e0d17dc79C8
 ALICE_KEY=0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
 BOB=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
@@ -63,8 +63,8 @@ for _ in $(seq 1 30); do cast chain-id --rpc-url "$RPC" >/dev/null 2>&1 && break
 cast chain-id --rpc-url "$RPC" >/dev/null || { echo "anvil not ready"; exit 1; }
 
 # --- 2. deploy the real-facet diamond ---------------------------------------
-log "deploying diamond via DeployFork.s.sol (Aave + Steakhouse Morpho + Pendle USD3 — all real, all default)"
-[ -f "$DIAMOND_REPO/script/DeployFork.s.sol" ] || { echo "DeployFork.s.sol missing — diamond side not ready"; exit 1; }
+log "deploying diamond via DeployFork.s.sol (Aave + Steakhouse Morpho + Pendle USD3, all real, all default)"
+[ -f "$DIAMOND_REPO/script/DeployFork.s.sol" ] || { echo "DeployFork.s.sol missing, diamond side not ready"; exit 1; }
 (cd "$DIAMOND_REPO" && "$FOUNDRY/forge" script script/DeployFork.s.sol:DeployFork \
   --rpc-url "$RPC" --broadcast --private-key "$DEPLOYER_KEY" -vv)
 
@@ -115,7 +115,7 @@ deposit() { # user key amount(USDC)
   echo "  deposited $3 USDC for $1 (shares: $(cast call "$VAULT" "balanceOf(address)(uint256)" "$1" --rpc-url "$RPC"))"
 }
 
-log "phase: deposits (alice 250k, bob 100k, carol 50k — staggered)"
+log "phase: deposits (alice 250k, bob 100k, carol 50k, staggered)"
 deposit "$ALICE" "$ALICE_KEY" 250000; sleep 12; snapshot
 deposit "$BOB"   "$BOB_KEY"   100000; sleep 12; snapshot
 deposit "$CAROL" "$CAROL_KEY" 50000;  sleep 20
@@ -130,7 +130,7 @@ CAROL_SHARES=$(cast call "$VAULT" "balanceOf(address)(uint256)" "$CAROL" --rpc-u
 cast send "$VAULT" "redeem(uint256,address,address)(uint256)" $((CAROL_SHARES / 2)) "$CAROL" "$CAROL" \
   --private-key "$CAROL_KEY" --rpc-url "$RPC" >/dev/null \
   && echo "  redeem OK (carol USDC: $(cast call "$USDC" "balanceOf(address)(uint256)" "$CAROL" --rpc-url "$RPC"))" \
-  || echo "  redeem REVERTED (share-lock or insufficient idle — check requestWithdraw path)"
+  || echo "  redeem REVERTED (share-lock or insufficient idle, check requestWithdraw path)"
 snapshot
 
-log "demo complete — keeper + anvil will be torn down"
+log "demo complete, keeper + anvil will be torn down"

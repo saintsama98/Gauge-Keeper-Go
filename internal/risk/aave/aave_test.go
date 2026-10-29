@@ -42,7 +42,7 @@ func TestNilReaderSafe(t *testing.T) {
 func TestDefaultProfileIsLowEL(t *testing.T) {
 	m := brain.DefaultRiskModel()
 	r := NewConfiguredReader(map[types.StrategyID]brain.RiskInputs{aid(1): DefaultProfile()})
-	dec := brain.NewGauntletLiteDecider(r, m, nil)
+	dec := brain.NewWaterFillDecider(r, m, nil)
 	state := &types.VaultState{Strategies: []types.StrategyState{
 		{ID: aid(1), CapBps: 5000, APY: 0.05},
 	}}

@@ -263,7 +263,7 @@ func TestExecuteSelectorPerKind(t *testing.T) {
 	}
 }
 
-// SetAllocation must pack the sorted (ids,bps) arrays — the calldata after the
+// SetAllocation must pack the sorted (ids,bps) arrays, the calldata after the
 // selector must ABI-decode back to the deterministic flattenAllocation output.
 func TestExecuteSetAllocationCalldata(t *testing.T) {
 	alloc := &types.Allocation{Targets: map[types.StrategyID]types.Bps{

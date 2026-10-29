@@ -4,7 +4,7 @@ import "github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 
 // YieldProvider maps a strategy id to an off-chain APY signal. It mirrors
 // brain.RiskProvider so APY is sourced through the same ports/adapters idiom as
-// risk. ok=false means "no live yield for this strategy" — the OverlayReader then
+// risk. ok=false means "no live yield for this strategy", the OverlayReader then
 // leaves the snapshot's APY untouched (0), and the brain water-fills by EL alone.
 //
 // APY is never read from the vault diamond (the ChainReader leaves it 0 by
