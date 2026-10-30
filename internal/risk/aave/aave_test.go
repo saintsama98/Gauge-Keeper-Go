@@ -1,6 +1,7 @@
 package aave
 
 import (
+	"context"
 	"testing"
 
 	"github.com/saintsama98/Gauge-Keeper-Go/internal/brain"
@@ -46,7 +47,7 @@ func TestDefaultProfileIsLowEL(t *testing.T) {
 	state := &types.VaultState{Strategies: []types.StrategyState{
 		{ID: aid(1), CapBps: 5000, APY: 0.05},
 	}}
-	a, err := dec.Decide(nil, state)
+	a, err := dec.Decide(context.Background(), state)
 	if err != nil {
 		t.Fatal(err)
 	}
