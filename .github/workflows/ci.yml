@@ -37,6 +37,12 @@ jobs:
       - name: vet
         run: go vet ./... && go vet -tags integration ./internal/integration/
 
+      - name: staticcheck
+        uses: dominikh/staticcheck-action@v1
+        with:
+          version: "2026.2.2"
+          install-go: false
+
       - name: build
         run: go build ./...
 

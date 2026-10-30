@@ -1,6 +1,7 @@
 package aave
 
 import (
+	"context"
 	"errors"
 	"math"
 	"math/big"
@@ -352,7 +353,7 @@ func TestSignalFlowsThroughBrain(t *testing.T) {
 	state := &types.VaultState{Strategies: []types.StrategyState{
 		{ID: aaveID(1), CapBps: 5000, APY: 0.10},
 	}}
-	a, err := dec.Decide(nil, state)
+	a, err := dec.Decide(context.Background(), state)
 	if err != nil {
 		t.Fatal(err)
 	}
