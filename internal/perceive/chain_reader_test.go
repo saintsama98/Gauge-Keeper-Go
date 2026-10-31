@@ -247,7 +247,7 @@ func TestChainReader_Snapshot(t *testing.T) {
 				withdrawByID: map[string]vault.LibWithdrawQueueWithdrawRequest{
 					// id 0: empty/fulfilled (shares 0) -> skipped
 					"1": {Owner: common.HexToAddress("0x1"), Receiver: common.HexToAddress("0x2"), Shares: big.NewInt(600)},
-					// id 2: cancelled (shares 0) -> skipped
+					// id 2: canceled (shares 0) -> skipped
 					"3": {Owner: common.HexToAddress("0x3"), Receiver: common.HexToAddress("0x4"), Shares: big.NewInt(300)},
 				},
 			},

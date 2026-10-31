@@ -48,7 +48,7 @@ func New(
 	return &Keeper{reader: r, decider: d, validator: v, sched: s, exec: e, pollEvery: pollEvery, log: log}
 }
 
-// Run polls until ctx is cancelled.
+// Run polls until ctx is canceled.
 func (k *Keeper) Run(ctx context.Context) error {
 	t := time.NewTicker(k.pollEvery)
 	defer t.Stop()
