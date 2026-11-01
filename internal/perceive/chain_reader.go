@@ -119,7 +119,7 @@ func (r *ChainReader) readStrategies(opts *bind.CallOpts) ([]types.StrategyState
 }
 
 // readPendingWithdraws enumerates unfulfilled async-queue exits. Request ids run
-// [0, nextWithdrawRequestId); a shares==0 slot is empty / fulfilled / cancelled.
+// [0, nextWithdrawRequestId); a shares==0 slot is empty / fulfilled / canceled.
 // We short-circuit when nothing is escrowed so the common (empty-queue) case
 // costs a single call.
 func (r *ChainReader) readPendingWithdraws(opts *bind.CallOpts) ([]types.WithdrawRequest, error) {
