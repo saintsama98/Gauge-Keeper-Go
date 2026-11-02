@@ -32,8 +32,9 @@ USDC=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
 # USDC faucet (fork-only trick; never touches a real key).
 USDC_WHALE=0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c
 
+# anvil default account 0, publicly known, local fork only.
 DEPLOYER_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-# anvil accounts #1..#3, the fake users.
+# anvil accounts #1..#3, the fake users. publicly known, local fork only.
 ALICE=0x70997970C51812dc3A010C7d01b50e0d17dc79C8
 ALICE_KEY=0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
 BOB=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
