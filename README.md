@@ -34,7 +34,7 @@ tick:
 | `internal/perceive` | Builds the `VaultState` snapshot: `chain_reader` reads the diamond (totalAssets, idle, per-strategy target/assets/cap/quarantine, idle reserve, churn bound); `overlay_reader` layers the live **APY** from yield providers onto it. |
 | `internal/brain` | `WaterFillDecider` (`water_fill.go`) + `RiskModel`/`RiskInputs` (`risk.go`). The only component with allocation intelligence. |
 | `internal/risk` | Live **risk** providers per venue + `composite.go` router (StrategyID → adapter). |
-| `internal/validate` | Re-checks every hard bound off-chain; on failure emits the current on-chain targets (a no-op) so an out-of-bounds allocation is never pushed. |
+| `internal/validate` | Re-checks every hard bound off-chain; on failure emits the current on-chain targets (a no-op) so an out-of-bounds allocation is never pushed. Churn is counted without quarantined venues, and movement forced by the owner cap or the idle reserve may exceed the bound. |
 | `internal/trigger` | Scheduler that fires guard / harvest / rebalance on their cadences. |
 | `internal/execute` | `LocalExecutor`, which signs and sends curator transactions (live or dry-run). |
 | `internal/chain` | RPC client wiring. |
@@ -50,8 +50,9 @@ tick:
 
 1. **Per-strategy pass.** For each venue compute the scoring yield `effectiveYield(APY)`, the expected loss `EL`, and a **risk-adjusted cap** `effectiveCapBps(ownerCap, EL)`. Quarantined/killed venues → cap 0.
 2. **Water-fill.** Pour the investable budget (`10000 − idleReserveBps`) in `StepBps` (25) chunks into the highest marginal score `yield − λ·EL`, never exceeding a venue's effective cap.
-3. **Hysteresis.** Moves below `MinDeltaBps` (50) snap back to the current target (no churn on noise).
-4. **Churn clamp.** Total movement is bounded by the vault's `MaxRebalanceDelta`.
+3. **Forced moves.** The vault rejects a vector with a nonzero target on a quarantined venue, a target above the owner cap, or a sum above the budget. Current targets that would break one of these are moved toward the fill first. A quarantined venue's exit does not count against the churn bound, as in the vault's rebalance; the other forced moves do.
+4. **Hysteresis.** Moves below `MinDeltaBps` (50) snap back to the current target (no churn on noise), unless the target is above the venue's risk-adjusted cap or the snaps together would push the sum over the budget.
+5. **Churn clamp.** Total movement is bounded by the vault's `MaxRebalanceDelta`, less any forced move. A forced move larger than the bound is still made in full.
 
 `effectiveCapBps(ownerCap, EL)`: `EL ≤ SoftThreshold (2%)` → full owner cap; `EL ≥ KillThreshold (10%)` → 0; linear taper between. `EL = max(closed-form PD×LGD, vendor EL)`. So governance sets the ceiling (owner cap); live risk decides how much of it is actually used.
 
@@ -119,6 +120,7 @@ The split is enforced on-chain by the diamond, not by the keeper.
 go build -o bin/keeper ./cmd/keeper     # or: make build
 go test ./...                           # or: make test
 go test -tags integration ./internal/integration/...   # or: make test-integration
+go test ./internal/brain -run '^$' -fuzz '^FuzzDecide$' -fuzztime 60s   # allocator against the vault's checks
 
 # run against an env profile
 set -a && . ./.env.fork && set +a

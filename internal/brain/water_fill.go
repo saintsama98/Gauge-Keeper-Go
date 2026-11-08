@@ -3,6 +3,7 @@ package brain
 import (
 	"context"
 	"log/slog"
+	"sort"
 
 	"github.com/saintsama98/Gauge-Keeper-Go/pkg/types"
 )
@@ -30,9 +31,11 @@ func NewWaterFillDecider(r RiskProvider, m RiskModel, log *slog.Logger) *WaterFi
 type slot struct {
 	id     types.StrategyID
 	cap    types.Bps // risk- and liquidity-adjusted ceiling
+	hard   types.Bps // ceiling the vault enforces: owner cap, or 0 when quarantined
 	yield  float64
 	el     float64
-	target types.Bps // current on-chain target (for hysteresis / churn)
+	target types.Bps // current on-chain target, then the base the churn clamp moves from
+	fill   types.Bps // water-fill proposal, before hysteresis and the churn clamp
 	alloc  types.Bps // proposed new target
 }
 
@@ -42,8 +45,9 @@ func (d *WaterFillDecider) Decide(_ context.Context, state *types.VaultState) (*
 	// Step 1, per-strategy risk pass: derive each venue's effective cap, EL and
 	// scoring yield. Quarantined and killed venues end up with cap 0.
 	for i, s := range state.Strategies {
-		sl := slot{id: s.ID, target: s.TargetBps}
+		sl := slot{id: s.ID, target: s.TargetBps, hard: s.CapBps}
 		if s.Quarantined {
+			sl.hard = 0
 			sl.el = 1.0
 			sl.cap = 0
 		} else {
@@ -70,6 +74,7 @@ func (d *WaterFillDecider) Decide(_ context.Context, state *types.VaultState) (*
 	if state.IdleReserveBps < types.BpsDenominator {
 		budget = types.BpsDenominator - state.IdleReserveBps
 	}
+	investable := budget
 	step := d.model.StepBps
 	if step == 0 {
 		step = 1 // guard: never spin forever on a zero step
@@ -100,18 +105,50 @@ func (d *WaterFillDecider) Decide(_ context.Context, state *types.VaultState) (*
 		budget -= chunk
 	}
 
-	// Step 3, hysteresis: ignore sub-threshold moves to avoid churn for noise.
 	for i := range slots {
-		if absDeltaBps(slots[i].alloc, slots[i].target) < d.model.MinDeltaBps {
+		slots[i].fill = slots[i].alloc
+	}
+
+	// Step 3, forced moves: the vault rejects the whole vector if any target is
+	// nonzero for a quarantined venue, above the owner cap, or if the sum is
+	// above the budget. Current targets that break these are moved first,
+	// toward the fill. A quarantined venue's exit is outside the vault's churn
+	// bound, as in its rebalance; the other forced moves are charged to it.
+	var forced types.Bps
+	for i := range slots {
+		if slots[i].target > slots[i].hard {
+			if slots[i].hard != 0 || !state.Strategies[i].Quarantined {
+				forced += slots[i].target - slots[i].hard
+			}
+			slots[i].target = slots[i].hard
+		}
+	}
+	forced += trimToward(slots, func(s *slot) *types.Bps { return &s.target }, investable)
+
+	// Step 4, hysteresis: ignore sub-threshold moves to avoid churn for noise,
+	// unless the target is above the venue's gated cap. Undo snaps that lifted
+	// a venue above its fill if together they push the sum over the budget.
+	for i := range slots {
+		if absDeltaBps(slots[i].alloc, slots[i].target) < d.model.MinDeltaBps && slots[i].target <= slots[i].cap {
 			slots[i].alloc = slots[i].target
 		}
 	}
+	trimToward(slots, func(s *slot) *types.Bps { return &s.alloc }, investable)
 
-	// Step 4, churn clamp: if total movement exceeds the per-call bound, scale
-	// every delta proportionally back toward the current targets.
-	clampChurn(slots, state.MaxRebalanceDeltaBps)
+	// Step 5, churn clamp: if total movement exceeds what is left of the
+	// per-call bound, scale every delta proportionally back toward the base.
+	if bound := state.MaxRebalanceDeltaBps; bound != 0 {
+		if forced >= bound {
+			for i := range slots {
+				slots[i].alloc = slots[i].target
+			}
+		} else {
+			clampChurn(slots, bound-forced)
+		}
+	}
 
-	// Step 5: emit every strategy (killed/quarantined explicitly 0).
+	// Step 6: emit every strategy (quarantined explicitly 0; killed 0 unless
+	// the churn bound is still draining it).
 	targets := make(map[types.StrategyID]types.Bps, len(slots))
 	for i := range slots {
 		targets[slots[i].id] = slots[i].alloc
@@ -193,6 +230,40 @@ func splitBudget(slots []slot, budget, total int, increasing bool) []int {
 		rem[best] = 0
 	}
 	return moves
+}
+
+// trimToward lowers the field picked by get toward each slot's fill until the
+// slots sum to at most budget, lowest score first, ties to the lower index. It
+// returns the amount removed. The fill sums to at most budget, so this always
+// succeeds.
+func trimToward(slots []slot, get func(*slot) *types.Bps, budget types.Bps) types.Bps {
+	var sum int
+	for i := range slots {
+		sum += int(*get(&slots[i]))
+	}
+	excess := sum - int(budget)
+	if excess <= 0 {
+		return 0
+	}
+	order := make([]int, len(slots))
+	for i := range order {
+		order[i] = i
+	}
+	sort.SliceStable(order, func(a, b int) bool {
+		return slots[order[a]].yield-slots[order[a]].el < slots[order[b]].yield-slots[order[b]].el
+	})
+	removed := 0
+	for _, i := range order {
+		v := get(&slots[i])
+		if excess == 0 || *v <= slots[i].fill {
+			continue
+		}
+		cut := min(int(*v-slots[i].fill), excess)
+		*v -= types.Bps(cut)
+		excess -= cut
+		removed += cut
+	}
+	return types.Bps(removed)
 }
 
 // absDeltaBps is |a - b| without unsigned underflow.

@@ -46,7 +46,7 @@ func (v *Validator) Check(state *types.VaultState, alloc *types.Allocation) Resu
 	var violations []string
 
 	known := make(map[types.StrategyID]bool, len(state.Strategies))
-	var sumTargets, sumDelta int
+	var sumTargets, sumDelta, forced, keptBase int
 
 	for _, s := range state.Strategies {
 		known[s.ID] = true
@@ -65,7 +65,17 @@ func (v *Validator) Check(state *types.VaultState, alloc *types.Allocation) Resu
 			violations = append(violations, fmt.Sprintf("strategy %x target %d > owner cap %d", s.ID[:4], t, s.CapBps))
 		}
 		sumTargets += int(t)
+		// Churn is counted as in the vault's rebalance, which skips quarantined
+		// strategies. Movement the vault's own checks force on the current
+		// targets is allowed past the bound: excess over the owner cap first,
+		// then excess over the investable budget (added below).
+		if s.Quarantined {
+			continue
+		}
 		sumDelta += absInt(int(t) - int(s.TargetBps))
+		base := min(int(s.TargetBps), int(s.CapBps))
+		forced += int(s.TargetBps) - base
+		keptBase += base
 	}
 
 	// Any id in the allocation that the vault doesn't know about is invalid.
@@ -84,8 +94,10 @@ func (v *Validator) Check(state *types.VaultState, alloc *types.Allocation) Resu
 		violations = append(violations, fmt.Sprintf("sum targets %d > investable %d (idle reserve %d)", sumTargets, investable, state.IdleReserveBps))
 	}
 
-	// Churn bound: total movement may not exceed the per-call delta cap.
-	if state.MaxRebalanceDeltaBps > 0 && sumDelta > int(state.MaxRebalanceDeltaBps) {
+	// Churn bound: total movement may not exceed the per-call delta cap, or the
+	// forced movement when that is larger.
+	forced += max(0, keptBase-investable)
+	if state.MaxRebalanceDeltaBps > 0 && sumDelta > max(int(state.MaxRebalanceDeltaBps), forced) {
 		violations = append(violations, fmt.Sprintf("churn Σ|Δ| %d > max rebalance delta %d", sumDelta, state.MaxRebalanceDeltaBps))
 	}
 
