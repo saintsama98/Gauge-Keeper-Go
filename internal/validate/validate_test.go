@@ -109,3 +109,41 @@ func containsSubstr(ss []string, sub string) bool {
 	}
 	return false
 }
+
+// A quarantined strategy's exit is outside the churn bound, as in the vault's
+// rebalance, so draining it in one call is valid.
+func TestAcceptsQuarantineExitPastChurnBound(t *testing.T) {
+	st := baseState()
+	st.MaxRebalanceDeltaBps = 100
+	st.Strategies[0].Quarantined = true
+	res := New(nil).Check(st, alloc(map[byte]types.Bps{1: 0, 2: 2100}))
+	if !res.OK {
+		t.Fatalf("quarantine exit rejected: %v", res.Violations)
+	}
+}
+
+// Movement forced by an owner cap below the current target is allowed past
+// the bound, but nothing on top of it.
+func TestChurnAllowsOnlyForcedMovementPastBound(t *testing.T) {
+	st := baseState()
+	st.MaxRebalanceDeltaBps = 100
+	st.Strategies[0].CapBps = 2500 // forces 500 bps off strategy 1
+	if res := New(nil).Check(st, alloc(map[byte]types.Bps{1: 2500, 2: 2000})); !res.OK {
+		t.Fatalf("forced move rejected: %v", res.Violations)
+	}
+	res := New(nil).Check(st, alloc(map[byte]types.Bps{1: 2500, 2: 2200}))
+	if res.OK || !containsSubstr(res.Violations, "churn") {
+		t.Fatalf("discretionary move on top of a forced one accepted: %v", res.Violations)
+	}
+}
+
+// Movement forced by an idle reserve raised above the current targets is
+// allowed past the bound.
+func TestChurnAllowsForcedBudgetCut(t *testing.T) {
+	st := baseState()
+	st.MaxRebalanceDeltaBps = 100
+	st.IdleReserveBps = 6000 // investable 4000 against 5000 held
+	if res := New(nil).Check(st, alloc(map[byte]types.Bps{1: 2000, 2: 2000})); !res.OK {
+		t.Fatalf("forced budget cut rejected: %v", res.Violations)
+	}
+}
